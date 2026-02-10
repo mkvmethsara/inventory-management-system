@@ -11,6 +11,10 @@ This is a smart Inventory Management System designed for our 2nd-semester projec
 3. Chamod
 4. Bineth
 5. Chamindu
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8505bc62fd359b5865483c7fd025cbfe30581124
 ## 🛠 Tech Stack
 
 - Language: Java / Python

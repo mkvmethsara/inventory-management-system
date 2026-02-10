@@ -13,4 +13,8 @@ Thumbs.db
 
 
 *.class
+<<<<<<< HEAD
 __pycache__/
+=======
+__pycache__/
+>>>>>>> 8505bc62fd359b5865483c7fd025cbfe30581124
