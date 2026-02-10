@@ -33,3 +33,16 @@ CREATE TABLE locations (
     location_code VARCHAR(50) NOT NULL,
     description VARCHAR(150)
 );
+CREATE TABLE item_batches (
+    batch_id INT AUTO_INCREMENT,
+    item_id INT NOT NULL,
+    expiry_date DATE,
+    received_date DATE NOT NULL,
+
+    PRIMARY KEY (item_id, batch_id),
+
+    CONSTRAINT fk_batch_item
+        FOREIGN KEY (item_id)
+        REFERENCES Items(item_id)
+        ON DELETE CASCADE
+);
