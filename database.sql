@@ -60,3 +60,31 @@ CREATE TABLE stock (
     REFERENCES locations(location_id)
 
 );
+CREATE TABLE stock_transactions (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    item_id INT NOT NULL,
+    batch_id INT NOT NULL,
+
+    location_id INT NOT NULL,
+    from_location_id INT NULL,
+
+    user_id INT NOT NULL,
+
+    transaction_type ENUM('IN','OUT','TRANSFER') NOT NULL,
+    quantity INT NOT NULL,
+
+    transaction_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (item_id, batch_id)
+        REFERENCES item_batches(item_id, batch_id),
+
+    FOREIGN KEY (location_id)
+        REFERENCES locations(location_id),
+
+    FOREIGN KEY (from_location_id)
+        REFERENCES locations(location_id),
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+);
