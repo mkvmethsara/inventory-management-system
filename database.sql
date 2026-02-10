@@ -18,3 +18,9 @@ CREATE TABLE users (
     role VARCHAR (30) NOT NULL
 );
 
+CREATE TABLE suppliers (
+    supplier_id INT AUTO_INCREMENT PRIMARY KEY,
+    supplier_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20)
+);
