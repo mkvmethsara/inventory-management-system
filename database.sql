@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS Items (
     item_name VARCHAR(50) NOT NULL,
     item_code VARCHAR(20) NOT NULL,
     category VARCHAR(30),
+    expirydate DATE NULL,
     minimum_level INT DEFAULT 0,
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     supplier_id INT,
