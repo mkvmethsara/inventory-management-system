@@ -17,3 +17,4 @@ CREATE TABLE users (
     password VARCHAR (255),
     role VARCHAR (30) NOT NULL
 );
+
