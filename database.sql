@@ -64,7 +64,6 @@ CREATE TABLE stock (
 );
 
 
-);
 
 CREATE TABLE item_suppliers (
     item_id INT NOT NULL,
