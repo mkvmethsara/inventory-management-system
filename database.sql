@@ -39,7 +39,7 @@ CREATE TABLE item_batches (
     expiry_date DATE,
     received_date DATE NOT NULL,
 
-    PRIMARY KEY (item_id, batch_id),
+    PRIMARY KEY (batch_id, item_id),
 
     CONSTRAINT fk_batch_item
     FOREIGN KEY (item_id) REFERENCES Items(item_id)
