@@ -60,3 +60,14 @@ CREATE TABLE stock (
     REFERENCES locations(location_id)
 
 );
+
+CREATE TABLE item_suppliers (
+    item_id INT NOT NULL,
+    supplier_id INT NOT NULL,
+
+    PRIMARY KEY (item_id, supplier_id),
+
+    FOREIGN KEY (item_id) REFERENCES Items(item_id),
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id)
+);
+
