@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS Items (
     item_code VARCHAR(20) NOT NULL,
     category VARCHAR(30),
     minimum_level INT DEFAULT 0,
-    create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     supplier_id INT,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id)
 );
@@ -34,7 +34,7 @@ CREATE TABLE locations (
     description VARCHAR(150)
 );
 CREATE TABLE item_batches (
-    batch_id INT AUTO_INCREMENT,
+    batch_id INT ,
     item_id INT NOT NULL,
     expiry_date DATE,
     received_date DATE NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE item_batches (
 
 CREATE TABLE stock (
     item_id INT NOT NULL,
-    batch_id INT NOT NULl,
+    batch_id INT NOT NULL,
     location_id INT NOT NULL,
     quantity INT NOT NULL DEFAULT 0,
     PRIMARY KEY (item_id, batch_id,location_id),
@@ -59,7 +59,17 @@ CREATE TABLE stock (
     FOREIGN KEY (location_id)
     REFERENCES locations(location_id)
 
+    PRIMARY KEY (item_id, batch_id, location_id),
+
+    FOREIGN KEY (item_id, batch_id)
+        REFERENCES item_batches(item_id, batch_id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (location_id)
+        REFERENCES locations(location_id)
 );
+
+
 
 CREATE TABLE item_suppliers (
     item_id INT NOT NULL,
