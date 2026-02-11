@@ -1,6 +1,13 @@
 CREATE DATABASE IF NOT EXISTS warehouse_db;
 USE warehouse_db;
 
+CREATE TABLE suppliers (
+    supplier_id INT AUTO_INCREMENT PRIMARY KEY,
+    supplier_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20)
+);
+
 CREATE TABLE IF NOT EXISTS Items (
     item_id INT AUTO_INCREMENT PRIMARY KEY,
     rfid_tag_id VARCHAR(50) UNIQUE,
@@ -21,12 +28,6 @@ CREATE TABLE users (
     role VARCHAR (30) NOT NULL
 );
 
-CREATE TABLE suppliers (
-    supplier_id INT AUTO_INCREMENT PRIMARY KEY,
-    supplier_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100),
-    phone VARCHAR(20)
-);
 
 CREATE TABLE locations (
     location_id INT AUTO_INCREMENT PRIMARY KEY,
