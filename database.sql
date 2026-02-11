@@ -49,15 +49,20 @@ CREATE TABLE item_batches (
 
 CREATE TABLE stock (
     item_id INT NOT NULL,
-    batch_id INT NOT NULl,
+    batch_id INT NOT NULL,
     location_id INT NOT NULL,
     quantity INT NOT NULL DEFAULT 0,
-    PRIMARY KEY (item_id, batch_id,location_id),
-    FOREIGN KEY (item_id, batch_id),
-    REFERENCES item_batches(item_id, batch_id),
-    ON DELETE CASCADE,
-    FOREIGN KEY (location_id),
-    REFERENCES locations(location_id)
+
+    PRIMARY KEY (item_id, batch_id, location_id),
+
+    FOREIGN KEY (item_id, batch_id)
+        REFERENCES item_batches(item_id, batch_id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (location_id)
+        REFERENCES locations(location_id)
+);
+
 
 );
 
