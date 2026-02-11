@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS warehouse_db;
 USE warehouse_db;
 
 CREATE TABLE IF NOT EXISTS Items (
-    item_id AUTO_INCREMENT PRIMARY KEY,
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
     rfid_tag_id VARCHAR(50) UNIQUE,
     item_name VARCHAR(50) NOT NULL,
     item_code VARCHAR(20) NOT NULL,
