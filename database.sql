@@ -56,7 +56,7 @@ CREATE TABLE stock (
     FOREIGN KEY (item_id, batch_id),
     REFERENCES item_batches(item_id, batch_id),
     ON DELETE CASCADE,
-    FOREIGN KEY (location_id),
+    FOREIGN KEY (location_id)
     REFERENCES locations(location_id)
 
 );
@@ -82,9 +82,9 @@ CREATE TABLE stock_transactions (
 
     user_id INT NOT NULL,
 
-    transaction_type ENUM('IN','OUT','TRANSFER') NOT NULL,
+    transaction_type ENUM('IN','OUT') NOT NULL,
     quantity INT NOT NULL,
-
+    reference VARCHAR(100) DEFAULT 'RFID-AUTO',
     transaction_time DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (item_id, batch_id)
@@ -99,7 +99,5 @@ CREATE TABLE stock_transactions (
     FOREIGN KEY (user_id)
         REFERENCES users(user_id)
 );
-INSERT INTO item_batches
-(item_id, expiry_date, received_date)
-VALUES
-(1, '2026-05-30', CURDATE());
+
+
