@@ -34,7 +34,7 @@ CREATE TABLE locations (
     description VARCHAR(150)
 );
 CREATE TABLE item_batches (
-    batch_id INT ,
+    batch_id INT AUTO_INCREMENT,
     item_id INT NOT NULL,
     expiry_date DATE,
     received_date DATE NOT NULL,
@@ -53,20 +53,15 @@ CREATE TABLE stock (
     location_id INT NOT NULL,
     quantity INT NOT NULL DEFAULT 0,
     PRIMARY KEY (item_id, batch_id,location_id),
-    FOREIGN KEY (item_id, batch_id),
-    REFERENCES item_batches(item_id, batch_id),
+    FOREIGN KEY (item_id, batch_id)
+    REFERENCES item_batches(item_id, batch_id)
     ON DELETE CASCADE,
     FOREIGN KEY (location_id)
     REFERENCES locations(location_id)
-
-    PRIMARY KEY (item_id, batch_id, location_id),
-
-    FOREIGN KEY (item_id, batch_id)
-        REFERENCES item_batches(item_id, batch_id)
-        ON DELETE CASCADE,
-
+    FOREIGN KEY (item_id, batch_id) REFERENCES item_batches(item_id, batch_id)
+    ON DELETE CASCADE,
     FOREIGN KEY (location_id)
-        REFERENCES locations(location_id)
+    REFERENCES locations(location_id)
 );
 
 
