@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS Items (
     item_name VARCHAR(50) NOT NULL,
     item_code VARCHAR(20) NOT NULL,
     category VARCHAR(30),
-    expirydate DATE NULL,
     minimum_level INT DEFAULT 0,
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     supplier_id INT,
@@ -54,10 +53,10 @@ CREATE TABLE stock (
     location_id INT NOT NULL,
     quantity INT NOT NULL DEFAULT 0,
     PRIMARY KEY (item_id, batch_id,location_id),
-    FOREIGN KEY (item_id, batch_id)
-    REFERENCES item_batches(item_id, batch_id)
+    FOREIGN KEY (item_id, batch_id),
+    REFERENCES item_batches(item_id, batch_id),
     ON DELETE CASCADE,
-    FOREIGN KEY (location_id)
+    FOREIGN KEY (location_id),
     REFERENCES locations(location_id)
 
 );
