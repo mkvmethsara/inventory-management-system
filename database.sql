@@ -99,3 +99,7 @@ CREATE TABLE stock_transactions (
     FOREIGN KEY (user_id)
         REFERENCES users(user_id)
 );
+INSERT INTO item_batches
+(item_id, expiry_date, received_date)
+VALUES
+(1, '2026-05-30', CURDATE());
