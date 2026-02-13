@@ -158,7 +158,9 @@ button:hover{
     <h1>TrackFlow Admin</h1>
     <div class="subtitle">Inventory Management Portal</div>
 
-    <form>
+    <form id="loginForm">
+
+
         <div class="form-group">
             <label>Username</label>
             <input type="text" placeholder="admin_user">
@@ -204,6 +206,25 @@ button:hover{
     </a>
 
 </div>
+<script>
+document.getElementById("loginForm").addEventListener("submit", function(e){
+
+    e.preventDefault();
+
+    const username =
+        document.querySelector('input[type="text"]').value.trim();
+
+    const password =
+        document.querySelector('input[type="password"]').value.trim();
+
+    if(username === "admin" && password === "1234"){
+        window.location.href = "admin-dashboard.html";
+    }else{
+        alert("Invalid username or password");
+    }
+
+});
+</script>
 
 </body>
 </html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard – TrackFlow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+    box-sizing:border-box;
+    font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+body{
+    margin:0;
+    background:#0b1326;
+    color:white;
+}
+
+.header{
+    height:64px;
+    background:#111c3a;
+    display:flex;
+    align-items:center;
+    padding:0 22px;
+    font-weight:700;
+    font-size:18px;
+}
+
+.layout{
+    display:flex;
+    min-height:calc(100vh - 64px);
+}
+
+/* sidebar */
+
+.sidebar{
+    width:220px;
+    background:#0f1a33;
+    padding:18px 12px;
+}
+
+.sidebar a{
+    display:block;
+    padding:12px 14px;
+    margin-bottom:8px;
+    border-radius:10px;
+    color:#c9d6ff;
+    text-decoration:none;
+    font-weight:600;
+}
+
+.sidebar a:hover{
+    background:#4f46e5;
+    color:white;
+}
+
+/* main */
+
+.main{
+    flex:1;
+    padding:24px;
+}
+
+.card{
+    background:#16234a;
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:18px;
+}
+
+h2{
+    margin-top:0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    TrackFlow Admin Dashboard
+</div>
+
+<div class="layout">
+
+    <div class="sidebar">
+        <a href="#">Dashboard</a>
+        <a href="#">Items</a>
+        <a href="#">Locations</a>
+        <a href="#">Suppliers</a>
+        <a href="#">Users</a>
+        <a href="#">Reports</a>
+        <a href="admin-login.html">Logout</a>
+    </div>
+
+    <div class="main">
+
+        <div class="card">
+            <h2>Welcome, Admin</h2>
+            <p>This is your admin dashboard.</p>
+            <p>API based data will be loaded here later.</p>
+        </div>
+
+        <div class="card">
+            <h2>System Status</h2>
+            <p>API connection : Not connected</p>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

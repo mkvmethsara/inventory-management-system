@@ -219,11 +219,24 @@ button:hover{
 
 </div>
 <script>
-document.querySelector("form").addEventListener("submit", function(e){
+document.getElementById("loginForm").addEventListener("submit", function(e){
+
     e.preventDefault();
-    window.location.href = "user-dashboard.html";
+
+    const username =
+        document.querySelector('input[type="text"]').value.trim();
+
+    const password =
+        document.querySelector('input[type="password"]').value.trim();
+
+    if(username === "admin" && password === "1234"){
+        window.location.href = "user-dashboard.html";
+    }else{
+        alert("Invalid username or password");
+    }
+
 });
 </script>
-
+    
 </body>
 </html>
