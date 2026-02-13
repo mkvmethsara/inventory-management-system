@@ -33,18 +33,20 @@ if (isset($_POST['login_btn'])) {
         <h1>TrackFlow Admin</h1>
         <div class="subtitle">Inventory Management Portal</div>
 
-        <form>
+        <form action="index.php" method="POST">
             <div class="form-group">
                 <label>Username</label>
-                <input type="text" placeholder="admin_user">
+                <input type="text" name="username" placeholder="admin_user" required>
             </div>
 
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" placeholder="********">
+                <input type="password" name="password" placeholder="********" required>
             </div>
 
-            <button type="submit">Sign In to Dashboard</button>
+            <button type="submit" name="login_btn">Sign In to Dashboard</button>
+
+            <?php if (isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
         </form>
 
         <div class="footer-text">
