@@ -1,9 +1,10 @@
 <?php
 $db_server = "localhost";
-$db_user = "root";
-$db_pass = "";
-$db_name = "warehouse_db";
-$conn = "";
+$db_user   = "root";
+$db_pass   = "";
+$db_name   = "warehouse_db";
+$conn      = "";
+
 
 try {
     $conn = mysqli_connect(
@@ -13,5 +14,6 @@ try {
         $db_name
     );
 } catch (mysqli_sql_exception) {
-    echo "Could not Connect!";
+
+    echo "System Error: We are having trouble reaching the database. Please contact the administrator.";
 }
