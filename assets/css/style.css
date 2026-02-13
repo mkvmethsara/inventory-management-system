@@ -10,7 +10,7 @@ body{
     display:flex;
     align-items:center;
     justify-content:center;
-    background:#2f2c83;
+    background:#2f2c83; 
 }
 
 
@@ -23,6 +23,7 @@ body{
     text-align:center;
 }
 
+
 .logo{
     width:56px;
     height:56px;
@@ -34,7 +35,26 @@ body{
     margin:0 auto 18px auto;
 }
 
-/* Form Styles */
+.logo svg{
+    width:28px;
+    height:28px;
+    stroke:white;
+}
+
+
+h1{
+    margin:0;
+    font-size:28px;
+    color:#111827;
+}
+
+.subtitle{
+    margin-top:6px;
+    margin-bottom:28px;
+    color:#6b7280;
+}
+
+
 .form-group{
     text-align:left;
     margin-bottom:18px;
@@ -47,6 +67,7 @@ label{
     color:#1f2933;
 }
 
+
 input{
     width:100%;
     padding:14px 16px;
@@ -56,6 +77,12 @@ input{
     font-size:15px;
     background:#f9fafb;
 }
+
+input:focus{
+    border-color:#4f46e5;
+    background:white;
+}
+
 
 button{
     width:100%;
@@ -71,3 +98,13 @@ button{
     box-shadow:0 10px 20px rgba(79,70,229,0.3);
 }
 
+button:hover{
+    background:#4338ca;
+}
+
+
+.footer-text{
+    margin-top:26px;
+    font-size:13px;
+    color:#9ca3af;
+}
