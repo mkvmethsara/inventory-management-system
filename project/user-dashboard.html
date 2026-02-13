@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>User Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+    box-sizing:border-box;
+    font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+body{
+    margin:0;
+    background:#f2f3f7;
+}
+
+/* top header */
+.header{
+    background:linear-gradient(135deg,#5a48f5,#3c34c9);
+    color:white;
+    padding:22px 20px 80px;
+    border-bottom-left-radius:30px;
+    border-bottom-right-radius:30px;
+    position:relative;
+}
+
+.status{
+    font-size:13px;
+    opacity:0.8;
+}
+
+h1{
+    margin:14px 0 6px;
+    font-size:26px;
+}
+
+.subtitle{
+    opacity:0.8;
+    font-size:15px;
+}
+
+/* cards container */
+.container{
+    padding:20px 18px;
+    margin-top:-40px;
+}
+
+
+/* card style */
+.card{
+    background:white;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 8px 18px rgba(0,0,0,0.08);
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.card:hover{
+    transform:translateY(-3px);
+}
+
+.card-left{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.icon{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    background:#f1f2f7;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+}
+
+.title{
+    font-weight:600;
+    color:#111827;
+}
+
+.desc{
+    font-size:13px;
+    color:#6b7280;
+}
+
+.arrow{
+    font-size:18px;
+    color:#9ca3af;
+}
+
+/* footer */
+.footer{
+    position:fixed;
+    bottom:0;
+    width:100%;
+    background:white;
+    padding:12px 20px;
+    font-size:14px;
+    display:flex;
+    justify-content:space-between;
+    border-top:1px solid #e5e7eb;
+}
+
+.synced{
+    color:#4f46e5;
+    font-weight:600;
+}
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logout-btn{
+    background:white;
+    color:#4f46e5;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+    text-decoration:none;
+}
+
+.logout-btn:hover{
+    background:#e0e7ff;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="top-bar">
+        <div class="status">🟢 ONLINE</div>
+        <a href="user-login.html" class="logout-btn">Logout</a>
+    </div>
+
+    <h1>Hello, John Doe</h1>
+    <div class="subtitle">What would you like to do today?</div>
+</div>
+
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-left">
+            <div class="icon">➕</div>
+            <div>
+                <div class="title">Receive Stock</div>
+                <div class="desc">Scan and add new inventory</div>
+            </div>
+        </div>
+        <div class="arrow">›</div>
+    </div>
+
+    <div class="card">
+        <div class="card-left">
+            <div class="icon">📡</div>
+            <div>
+                <div class="title">Stock Lookup</div>
+                <div class="desc">Scan RFID to check details</div>
+            </div>
+        </div>
+        <div class="arrow">›</div>
+    </div>
+
+    <div class="card">
+        <div class="card-left">
+            <div class="icon">🔄</div>
+            <div>
+                <div class="title">Move Stock</div>
+                <div class="desc">Transfer between locations</div>
+            </div>
+        </div>
+        <div class="arrow">›</div>
+    </div>
+
+    <div class="card">
+        <div class="card-left">
+            <div class="icon">🕒</div>
+            <div>
+                <div class="title">Recent Activity</div>
+                <div class="desc">Check your scan history</div>
+            </div>
+        </div>
+        <div class="arrow">›</div>
+    </div>
+
+</div>
+
+<div class="footer">
+    <div>Sync Status</div>
+    <div class="synced">All items synced</div>
+</div>
+
+</body>
+</html>
