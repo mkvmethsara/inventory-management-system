@@ -108,3 +108,66 @@ button:hover{
     font-size:13px;
     color:#9ca3af;
 }
+
+.admin-dash-page body {
+    margin: 0;
+    background: #0b1326; 
+    color: white;
+}
+
+.admin-dash-page .header {
+    height: 64px;
+    background: #111c3a;
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.admin-dash-page .sidebar {
+    width: 220px;
+    background: #0f1a33;
+    padding: 18px 12px;
+}
+
+.admin-dash-page .sidebar a {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    color: #c9d6ff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.admin-dash-page .card {
+    background: #16234a;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 18px;
+}
+
+.staff-dash-page body {
+    margin: 0;
+    background: #f2f3f7; 
+}
+
+.staff-dash-page .header {
+    background: linear-gradient(135deg,#5a48f5,#3c34c9);
+    color: white;
+    padding: 22px 20px 80px;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+}
+
+.staff-dash-page .card {
+    background: white;
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+}
