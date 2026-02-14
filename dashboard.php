@@ -1,5 +1,5 @@
 <?php
-include 'config/db.php'; // The bridge
+include 'config/db.php'; // Your database bridge
 ?>
 <!DOCTYPE html>
 <html lang="en" class="admin-dash-page">
@@ -18,6 +18,7 @@ include 'config/db.php'; // The bridge
     </div>
 
     <div class="layout">
+
         <div class="sidebar">
             <a href="dashboard.php">Dashboard</a>
             <a href="#">Items</a>
@@ -32,7 +33,11 @@ include 'config/db.php'; // The bridge
             <div class="card">
                 <h2>Welcome, Admin</h2>
                 <p>This is your admin dashboard.</p>
-                <p>Database Status: <span style="color: #4f46e5;">Connected 🟢</span></p>
+                <p>Database Status:
+                    <span style="color: #4f46e5;">
+                        <?php echo ($conn) ? "Connected 🟢" : "Disconnected 🔴"; ?>
+                    </span>
+                </p>
             </div>
 
             <div class="card">
@@ -40,6 +45,7 @@ include 'config/db.php'; // The bridge
                 <p>XAMPP / MySQL : Active</p>
             </div>
         </div>
+
     </div>
 
 </body>
