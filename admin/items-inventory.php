@@ -1,6 +1,5 @@
 <?php
-include 'config/db.php';
-
+include '../config/db.php';
 // SQL Query: Get Items + Calculate Total Quantity + Find Location
 // We use GROUP BY because one item might be in multiple batches
 $sql = "SELECT 
@@ -25,7 +24,7 @@ $result = mysqli_query($conn, $sql);
     <meta charset="UTF-8">
     <title>Items Inventory</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 
 <body>
