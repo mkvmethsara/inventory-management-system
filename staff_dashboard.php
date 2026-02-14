@@ -14,39 +14,66 @@ include 'config/db.php';
 <body>
 
     <div class="header">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="font-size:13px; opacity:0.8;">🟢 ONLINE</div>
-            <a href="user-login.php" style="background:white; color:#4f46e5; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; text-decoration:none;">Logout</a>
+        <div class="top-bar">
+            <div class="status">🟢 ONLINE</div>
+            <a href="user-login.php" class="logout-btn">Logout</a>
         </div>
 
         <h1>Hello, Staff</h1>
         <div class="subtitle">What would you like to do today?</div>
     </div>
 
-    <div class="container" style="padding:20px 18px; margin-top:-40px;">
+    <div class="container">
 
-        <div class="card">
-            <div style="display:flex; align-items:center; gap:14px;">
-                <div style="width:48px; height:48px; border-radius:14px; background:#f1f2f7; display:flex; align-items:center; justify-content:center; font-size:22px;">➕</div>
+        <a href="receive-stock.php" class="card">
+            <div class="card-left">
+                <div class="icon">➕</div>
                 <div>
-                    <div style="font-weight:600; color:#111827;">Receive Stock</div>
-                    <div style="font-size:13px; color:#6b7280;">Scan and add new inventory</div>
+                    <div class="title">Receive Stock</div>
+                    <div class="desc">Scan and add new inventory</div>
                 </div>
             </div>
-            <div style="font-size:18px; color:#9ca3af;">›</div>
-        </div>
+            <div class="arrow">›</div>
+        </a>
 
-        <div class="card">
-            <div style="display:flex; align-items:center; gap:14px;">
-                <div style="width:48px; height:48px; border-radius:14px; background:#f1f2f7; display:flex; align-items:center; justify-content:center; font-size:22px;">📡</div>
+        <a href="stock-lookup.php" class="card">
+            <div class="card-left">
+                <div class="icon">📡</div>
                 <div>
-                    <div style="font-weight:600; color:#111827;">Stock Lookup</div>
-                    <div style="font-size:13px; color:#6b7280;">Scan RFID to check details</div>
+                    <div class="title">Stock Lookup</div>
+                    <div class="desc">Scan RFID to check details</div>
                 </div>
             </div>
-            <div style="font-size:18px; color:#9ca3af;">›</div>
-        </div>
+            <div class="arrow">›</div>
+        </a>
 
+        <a href="move-stock.php" class="card">
+            <div class="card-left">
+                <div class="icon">🔄</div>
+                <div>
+                    <div class="title">Move Stock</div>
+                    <div class="desc">Transfer between locations</div>
+                </div>
+            </div>
+            <div class="arrow">›</div>
+        </a>
+
+        <a href="activity.php" class="card">
+            <div class="card-left">
+                <div class="icon">🕒</div>
+                <div>
+                    <div class="title">Recent Activity</div>
+                    <div class="desc">Check your scan history</div>
+                </div>
+            </div>
+            <div class="arrow">›</div>
+        </a>
+
+    </div>
+
+    <div class="footer">
+        <div>Sync Status</div>
+        <div class="synced">All items synced</div>
     </div>
 
 </body>

@@ -1,5 +1,5 @@
 <?php
-include 'config/db.php'; // Your database bridge
+include 'config/db.php';
 ?>
 <!DOCTYPE html>
 <html lang="en" class="admin-dash-page">
@@ -21,18 +21,17 @@ include 'config/db.php'; // Your database bridge
 
         <div class="sidebar">
             <a href="dashboard.php">Dashboard</a>
-            <a href="#">Items</a>
-            <a href="#">Locations</a>
-            <a href="#">Suppliers</a>
-            <a href="#">Users</a>
-            <a href="#">Reports</a>
+            <a href="items.php">Items</a>
+            <a href="locations.php">Locations</a>
+            <a href="suppliers.php">Suppliers</a>
+            <a href="users.php">Users</a>
+            <a href="reports.php">Reports</a>
             <a href="index.php">Logout</a>
         </div>
 
         <div class="main">
             <div class="card">
                 <h2>Welcome, Admin</h2>
-                <p>This is your admin dashboard.</p>
                 <p>Database Status:
                     <span style="color: #4f46e5;">
                         <?php echo ($conn) ? "Connected 🟢" : "Disconnected 🔴"; ?>
