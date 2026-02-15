@@ -1,105 +1,119 @@
 <?php
 include '../config/db.php';
-// SQL Query: Get Items + Calculate Total Quantity + Find Location
-// We use GROUP BY because one item might be in multiple batches
-$sql = "SELECT 
-            i.item_id, 
-            i.item_name, 
-            i.category, 
-            i.item_code,
-            i.minimum_level,
-            COALESCE(SUM(s.quantity), 0) as total_qty,
-            MAX(l.location_code) as main_location
-        FROM items i
-        LEFT JOIN stock s ON i.item_id = s.item_id
-        LEFT JOIN locations l ON s.location_id = l.location_id
-        GROUP BY i.item_id";
 
+// SAVE LOGIC
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $item_code = mysqli_real_escape_string($conn, $_POST['item_id']);
+    $item_name = mysqli_real_escape_string($conn, $_POST['item_name']);
+    $category  = mysqli_real_escape_string($conn, $_POST['category']);
+
+    $sql = "INSERT INTO items (item_code, item_name, category) VALUES ('$item_code', '$item_name', '$category')";
+    if (mysqli_query($conn, $sql)) {
+        echo "<script>alert('✅ Item Added Successfully!'); window.location.href='items-inventory.php';</script>";
+    }
+}
+
+// FETCH DATA
+$sql = "SELECT i.*, COALESCE(SUM(s.quantity), 0) as total_qty FROM items i LEFT JOIN stock s ON i.item_id = s.item_id GROUP BY i.item_id ORDER BY i.item_id DESC";
 $result = mysqli_query($conn, $sql);
 ?>
+
 <!DOCTYPE html>
-<html lang="en" class="admin-dash-page">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>Items Inventory</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackFlow – Items Inventory</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 
-<body>
+<body class="admin-dash-page">
 
-    <div class="header">
-        TrackFlow – Items Inventory
-    </div>
+    <div class="header">TrackFlow – Items Inventory</div>
 
     <div class="layout">
-
         <?php include 'menu.php'; ?>
 
         <div class="main">
-
             <div class="card">
-
                 <div class="top-bar">
-                    <div class="search">
-                        <input type="text" placeholder="Search item...">
+                    <div class="filters">
+                        <input type="text" id="searchInput" placeholder="Search inventory...">
                     </div>
-                    <a href="add-item.php" class="add-btn">+ Add Item</a>
+                    <button class="add-btn" onclick="openTmsPopup()">+ Add Item</button>
                 </div>
 
-                <table>
+                <table id="itemsTable">
                     <thead>
                         <tr>
-                            <th>Item ID</th>
-                            <th>Item Name</th>
+                            <th>Code</th>
+                            <th>Name</th>
                             <th>Category</th>
-                            <th>Quantity</th>
-                            <th>Location</th>
+                            <th>Qty</th>
                             <th>Status</th>
                         </tr>
                     </thead>
-
                     <tbody>
-                        <?php
-                        if (mysqli_num_rows($result) > 0) {
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                // 1. Determine Status Logic
-                                $qty = $row['total_qty'];
-                                $min = $row['minimum_level'];
-                                $status_class = "in";
-                                $status_text = "In Stock";
-
-                                if ($qty == 0) {
-                                    $status_class = "out";
-                                    $status_text = "Out of Stock";
-                                } elseif ($qty < $min) {
-                                    $status_class = "low";
-                                    $status_text = "Low Stock";
-                                }
-
-                                // 2. Output the Table Row
-                                echo "<tr>";
-                                echo "<td style='opacity:0.7;'>#" . $row['item_code'] . "</td>";
-                                echo "<td style='font-weight:bold;'>" . $row['item_name'] . "</td>";
-                                echo "<td>" . $row['category'] . "</td>";
-                                echo "<td style='font-family:monospace; font-size:15px;'>" . $qty . "</td>";
-                                echo "<td>" . ($row['main_location'] ? $row['main_location'] : 'Not Assigned') . "</td>";
-                                echo "<td><span class='status " . $status_class . "'>" . $status_text . "</span></td>";
-                                echo "</tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='6' style='text-align:center; padding:20px; opacity:0.5;'>No items found.</td></tr>";
-                        }
+                        <?php while ($row = mysqli_fetch_assoc($result)):
+                            $qty = $row['total_qty'];
+                            $s_class = ($qty > 20) ? "in" : (($qty > 0) ? "low" : "out");
+                            $status = ($qty > 20) ? "In Stock" : (($qty > 0) ? "Low Stock" : "Out of Stock");
                         ?>
+                            <tr>
+                                <td style="opacity:0.6;"><?php echo $row['item_code']; ?></td>
+                                <td><strong><?php echo $row['item_name']; ?></strong></td>
+                                <td><?php echo $row['category']; ?></td>
+                                <td><?php echo $qty; ?></td>
+                                <td><span class="status <?php echo $s_class; ?>"><?php echo $status; ?></span></td>
+                            </tr>
+                        <?php endwhile; ?>
                     </tbody>
                 </table>
-
             </div>
-
         </div>
-
     </div>
+
+    <div id="TMS_INVENTORY_MODAL_OVERLAY">
+        <div id="TMS_MODAL_BOX_CONTENT">
+            <h3>Add New Item</h3>
+            <form method="POST">
+                <label>Item Code (ID)</label>
+                <input type="text" name="item_id" placeholder="e.g. ITM001" required>
+
+                <label>Item Name</label>
+                <input type="text" name="item_name" placeholder="e.g. Keyboard" required>
+
+                <label>Category</label>
+                <input type="text" name="category" placeholder="e.g. Electronics" required>
+
+                <div class="tms-form-footer">
+                    <button type="button" class="tms-cancel-btn" onclick="closeTmsPopup()">Cancel</button>
+                    <button type="submit" class="tms-save-btn">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openTmsPopup() {
+            document.getElementById("TMS_INVENTORY_MODAL_OVERLAY").classList.add("tms-active");
+        }
+
+        function closeTmsPopup() {
+            document.getElementById("TMS_INVENTORY_MODAL_OVERLAY").classList.remove("tms-active");
+        }
+
+        window.onclick = function(e) {
+            if (e.target == document.getElementById("TMS_INVENTORY_MODAL_OVERLAY")) closeTmsPopup();
+        }
+
+        document.getElementById("searchInput").addEventListener("keyup", function() {
+            let val = this.value.toLowerCase();
+            document.querySelectorAll("#itemsTable tbody tr").forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+            });
+        });
+    </script>
 
 </body>
 
