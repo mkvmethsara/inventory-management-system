@@ -116,6 +116,58 @@ tr:nth-child(even){
 .ok{ background:#1f7a3f; }
 .expiring{ background:#b45309; }
 .expired{ background:#9f1239; }
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.modal-box{
+    background:#16234a;
+    padding:20px;
+    border-radius:14px;
+    width:320px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.modal-box input,
+.modal-box select{
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    outline:none;
+}
+
+.form-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:10px;
+}
+
+.form-actions button{
+    padding:8px 14px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.form-actions .cancel{
+    background:#334155;
+    color:white;
+}
+
+.form-actions button:not(.cancel){
+    background:#4f46e5;
+    color:white;
+}
 
 </style>
 </head>
@@ -148,20 +200,24 @@ tr:nth-child(even){
             <div class="top-bar">
 
                 <div class="filters">
-                    <input type="text" placeholder="Search item / batch...">
-                    <select>
-                        <option>All Status</option>
-                        <option>Valid</option>
-                        <option>Expiring Soon</option>
-                        <option>Expired</option>
-                    </select>
+                    <input type="text" id="searchInput" placeholder="Search item / batch...">
+
+                    <select id="statusFilter">
+    <option value="all">All Status</option>
+    <option value="valid">Valid</option>
+    <option value="expiring">Expiring Soon</option>
+    <option value="expired">Expired</option>
+</select>
+
                 </div>
 
-                <button class="add-btn">+ Add Batch</button>
+               <button class="add-btn" id="openBatchBtn">+ Add Batch</button>
+
 
             </div>
 
-            <table>
+            <table id="batchTable">
+
                 <thead>
                     <tr>
                         <th>Item ID</th>
@@ -206,12 +262,127 @@ tr:nth-child(even){
                     </tr>
                 </tbody>
             </table>
+<!-- Add Batch Modal -->
+<div id="batchModal" class="modal">
+
+  <div class="modal-box">
+    <h3>Add New Batch</h3>
+
+    <input type="text" id="bItemId" placeholder="Item ID">
+    <input type="text" id="bItemName" placeholder="Item Name">
+    <input type="text" id="bBatchNo" placeholder="Batch No">
+    <input type="number" id="bQty" placeholder="Quantity">
+    <input type="date" id="bMfg">
+    <input type="date" id="bExp">
+
+    <select id="bStatus">
+        <option value="Valid">Valid</option>
+        <option value="Expiring Soon">Expiring Soon</option>
+        <option value="Expired">Expired</option>
+    </select>
+
+    <div class="form-actions">
+        <button id="saveBatchBtn">Save</button>
+        <button id="closeBatchBtn" class="cancel">Cancel</button>
+    </div>
+
+  </div>
+</div>
 
         </div>
 
     </div>
 
 </div>
+<script>
+const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+const table = document.getElementById("batchTable");
+
+function filterTable(){
+
+    const searchValue = searchInput.value.toLowerCase();
+    const statusValue = statusFilter.value.toLowerCase();
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    rows.forEach(row => {
+
+        const rowText = row.textContent.toLowerCase();
+
+        const statusCell = row.querySelector("td:last-child").textContent.toLowerCase();
+
+        let matchesSearch = rowText.includes(searchValue);
+        let matchesStatus = statusValue === "all" || statusCell.includes(statusValue);
+
+        row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
+
+    });
+
+}
+
+searchInput.addEventListener("keyup", filterTable);
+statusFilter.addEventListener("change", filterTable);
+</script>
+<script>
+const openBatchBtn  = document.getElementById("openBatchBtn");
+const closeBatchBtn = document.getElementById("closeBatchBtn");
+const batchModal    = document.getElementById("batchModal");
+const saveBatchBtn  = document.getElementById("saveBatchBtn");
+
+const batchBody = document.querySelector("#batchTable tbody");
+
+openBatchBtn.onclick = () => {
+    batchModal.style.display = "flex";
+};
+
+closeBatchBtn.onclick = () => {
+    batchModal.style.display = "none";
+};
+
+saveBatchBtn.onclick = () => {
+
+    const itemId   = document.getElementById("bItemId").value.trim();
+    const itemName = document.getElementById("bItemName").value.trim();
+    const batchNo  = document.getElementById("bBatchNo").value.trim();
+    const qty      = document.getElementById("bQty").value.trim();
+    const mfg      = document.getElementById("bMfg").value;
+    const exp      = document.getElementById("bExp").value;
+    const status   = document.getElementById("bStatus").value;
+
+    if(!itemId || !itemName || !batchNo || !qty || !mfg || !exp){
+        alert("Please fill all fields");
+        return;
+    }
+
+    let badgeClass = "ok";
+    if(status === "Expiring Soon") badgeClass = "expiring";
+    if(status === "Expired") badgeClass = "expired";
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>${itemId}</td>
+        <td>${itemName}</td>
+        <td>${batchNo}</td>
+        <td>${qty}</td>
+        <td>${mfg}</td>
+        <td>${exp}</td>
+        <td><span class="badge ${badgeClass}">${status}</span></td>
+    `;
+
+    batchBody.appendChild(row);
+
+    batchModal.style.display = "none";
+
+    document.getElementById("bItemId").value = "";
+    document.getElementById("bItemName").value = "";
+    document.getElementById("bBatchNo").value = "";
+    document.getElementById("bQty").value = "";
+    document.getElementById("bMfg").value = "";
+    document.getElementById("bExp").value = "";
+};
+</script>
 
 </body>
 </html>

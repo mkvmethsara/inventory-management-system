@@ -120,6 +120,59 @@ tr:nth-child(even){
 .out{
     background:#9f1239;
 }
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.modal-box{
+    background:#16234a;
+    padding:20px;
+    border-radius:14px;
+    width:300px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.modal-box input,
+.modal-box select{
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    outline:none;
+}
+
+.form-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:10px;
+}
+
+.form-actions button{
+    padding:8px 14px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.form-actions .cancel{
+    background:#334155;
+    color:white;
+}
+
+.form-actions button:not(.cancel){
+    background:#4f46e5;
+    color:white;
+}
+
 </style>
 </head>
 
@@ -150,13 +203,18 @@ tr:nth-child(even){
 
             <div class="top-bar">
                 <div class="search">
-                    <input type="text" placeholder="Search item...">
+                    <input type="text" id="searchInput" placeholder="Search item...">
+
                 </div>
 
-                <button class="add-btn">+ Add Item</button>
+              <button class="add-btn" id="openFormBtn">+ Add Item</button>
+
+
             </div>
 
-            <table>
+            <table id="itemsTable">
+
+
                 <thead>
                     <tr>
                         <th>Item ID</th>
@@ -197,12 +255,120 @@ tr:nth-child(even){
                     </tr>
                 </tbody>
             </table>
+            <!-- Add Item Modal -->
+<div id="addModal" class="modal">
+
+  <div class="modal-box">
+    <h3>Add New Item</h3>
+
+    <input type="text" id="itemId" placeholder="Item ID">
+    <input type="text" id="itemName" placeholder="Item Name">
+    <input type="text" id="category" placeholder="Category">
+    <input type="number" id="quantity" placeholder="Quantity">
+    <input type="text" id="location" placeholder="Location">
+
+    <select id="status">
+        <option value="In Stock">In Stock</option>
+        <option value="Low Stock">Low Stock</option>
+        <option value="Out of Stock">Out of Stock</option>
+    </select>
+
+    <div class="form-actions">
+        <button id="saveItemBtn">Save</button>
+        <button id="closeFormBtn" class="cancel">Cancel</button>
+    </div>
+
+  </div>
+</div>
+
 
         </div>
 
     </div>
 
 </div>
+<script>
+const searchInput = document.getElementById("searchInput");
+const table = document.getElementById("itemsTable");
+
+searchInput.addEventListener("keyup", function () {
+
+    const filter = searchInput.value.toLowerCase();
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    rows.forEach(function(row){
+
+        const rowText = row.textContent.toLowerCase();
+
+        if (rowText.includes(filter)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+
+    });
+
+});
+</script>
+<script>
+const openBtn = document.getElementById("openFormBtn");
+const closeBtn = document.getElementById("closeFormBtn");
+const modal = document.getElementById("addModal");
+const saveBtn = document.getElementById("saveItemBtn");
+
+const tableBody = document.querySelector("#itemsTable tbody");
+
+openBtn.onclick = () => {
+    modal.style.display = "flex";
+};
+
+closeBtn.onclick = () => {
+    modal.style.display = "none";
+};
+
+saveBtn.onclick = () => {
+
+    const id = document.getElementById("itemId").value.trim();
+    const name = document.getElementById("itemName").value.trim();
+    const cat = document.getElementById("category").value.trim();
+    const qty = document.getElementById("quantity").value.trim();
+    const loc = document.getElementById("location").value.trim();
+    const status = document.getElementById("status").value;
+
+    if(!id || !name || !cat || !qty || !loc){
+        alert("Please fill all fields");
+        return;
+    }
+
+    let statusClass = "in";
+
+    if(status === "Low Stock") statusClass = "low";
+    if(status === "Out of Stock") statusClass = "out";
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>${id}</td>
+        <td>${name}</td>
+        <td>${cat}</td>
+        <td>${qty}</td>
+        <td>${loc}</td>
+        <td><span class="status ${statusClass}">${status}</span></td>
+    `;
+
+    tableBody.appendChild(row);
+
+    modal.style.display = "none";
+
+    document.getElementById("itemId").value = "";
+    document.getElementById("itemName").value = "";
+    document.getElementById("category").value = "";
+    document.getElementById("quantity").value = "";
+    document.getElementById("location").value = "";
+};
+</script>
+
 
 </body>
 </html>
