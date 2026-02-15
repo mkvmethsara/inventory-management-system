@@ -11,7 +11,7 @@ if (isset($_POST['login_btn'])) {
 
     if (mysqli_num_rows($result) > 0) {
 
-        header("Location: dashboard.php");
+        header("Location: admin/dashboard.php");
         exit();
     } else {
         $error = "Invalid Username or Password!";

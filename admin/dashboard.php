@@ -1,5 +1,5 @@
 <?php
-include 'config/db.php';
+include '../config/db.php';
 ?>
 <!DOCTYPE html>
 <html lang="en" class="admin-dash-page">
@@ -8,7 +8,7 @@ include 'config/db.php';
     <meta charset="UTF-8">
     <title>Admin Dashboard – TrackFlow</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 
 <body>
@@ -19,19 +19,12 @@ include 'config/db.php';
 
     <div class="layout">
 
-        <div class="sidebar">
-            <a href="dashboard.php">Dashboard</a>
-            <a href="items.php">Items</a>
-            <a href="locations.php">Locations</a>
-            <a href="suppliers.php">Suppliers</a>
-            <a href="users.php">Users</a>
-            <a href="reports.php">Reports</a>
-            <a href="index.php">Logout</a>
-        </div>
+        <?php include 'menu.php'; ?>
 
         <div class="main">
             <div class="card">
                 <h2>Welcome, Admin</h2>
+                <p>This is your admin dashboard.</p>
                 <p>Database Status:
                     <span style="color: #4f46e5;">
                         <?php echo ($conn) ? "Connected 🟢" : "Disconnected 🔴"; ?>
