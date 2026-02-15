@@ -7,5 +7,6 @@
     <a href="suppliers.php">Suppliers</a>
     <a href="staff.php">Staff Management</a>
     <a href="transactions.php">Transaction Logs</a>
-    <a href="logout.php" style="color: #f87171;">Logout</a>
+
+    <a href="../index.php" class="logout-link" style="margin-top: 30px;">Logout</a>
 </div>
