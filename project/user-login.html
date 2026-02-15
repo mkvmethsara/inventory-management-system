@@ -173,17 +173,17 @@ button:hover{
     <h1>Warehouse RFID</h1>
     <div class="subtitle">Inventory Management System</div>
 
-    <form action="user-dashboard.html">
+    <form id="loginForm">
 
 
         <div class="form-group">
             <label>Username</label>
-            <input type="text" placeholder="staff_01">
+            <input type="text" id="username" placeholder="staff_01">
         </div>
 
         <div class="form-group">
             <label>Password</label>
-            <input type="password" placeholder="••••••••">
+            <input type="password" id="password" placeholder="••••••••">
         </div>
 
         <button type="submit">Login</button>
@@ -220,23 +220,20 @@ button:hover{
 </div>
 <script>
 document.getElementById("loginForm").addEventListener("submit", function(e){
-
     e.preventDefault();
 
-    const username =
-        document.querySelector('input[type="text"]').value.trim();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-    const password =
-        document.querySelector('input[type="password"]').value.trim();
-
-    if(username === "admin" && password === "1234"){
+    if(username === "user" && password === "1234"){
         window.location.href = "user-dashboard.html";
     }else{
         alert("Invalid username or password");
     }
-
 });
 </script>
-    
+
+
+
 </body>
 </html>

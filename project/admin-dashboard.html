@@ -208,6 +208,24 @@ body{
     </div>
 
 </div>
+<div id="logList"></div>
+
+<script>
+let logs = JSON.parse(localStorage.getItem("logs")) || [];
+
+let html="";
+logs.forEach(l=>{
+    html+=`
+    <div class="row">
+        <b>${l.type}</b><br>
+        ${l.code}<br>
+        <small>${l.time}</small>
+    </div>
+    `;
+});
+
+document.getElementById("logList").innerHTML=html;
+</script>
 
 </body>
 </html>
