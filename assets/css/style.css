@@ -1260,3 +1260,119 @@ tr:hover {
     border: 1px dashed #334155; /* Dashed border for the "Coming Soon" box */
 }
 
+/* --- RECEIVE STOCK PAGE STYLES --- */
+
+/* The White Card Container */
+.stock-card {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* Form Inputs */
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+input[type="text"], 
+input[type="number"], 
+select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #f9fafb;
+    outline: none;
+    transition: 0.2s;
+}
+
+input:focus, select:focus {
+    border-color: #5a48f5;
+    background: white;
+}
+
+/* Item Preview Box (When item is found) */
+.item-preview-box {
+    background: #f0fdf4;
+    border: 2px dashed #22c55e;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.item-preview-title {
+    color: #166534;
+    font-weight: bold;
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.item-preview-name {
+    color: #14532d;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.item-preview-code {
+    color: #6b7280;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+/* Buttons */
+.btn-action {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    color: white;
+    margin-top: 10px;
+}
+
+.btn-scan {
+    background: #111827; /* Dark */
+}
+.btn-scan:hover { background: #000; }
+
+.btn-save {
+    background: #22c55e; /* Green */
+}
+.btn-save:hover { background: #16a34a; }
+
+.btn-cancel {
+    background: #ef4444; /* Red */
+    display: block;
+    text-align: center;
+    text-decoration: none;
+}
+.btn-cancel:hover { background: #dc2626; }
+
+/* Success/Error Messages */
+.alert-box {
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.alert-success { background: #dcfce7; color: #166534; }
+.alert-error { background: #fee2e2; color: #991b1b; }

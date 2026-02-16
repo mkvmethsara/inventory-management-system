@@ -1,0 +1,150 @@
+/* --- QR SCANNER STYLES --- */
+
+.scanner-container {
+    text-align: center;
+    padding: 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+/* The Camera Box (Hidden by default) */
+.scanner-wrapper {
+    width: 250px;
+    height: 250px;
+    border-radius: 20px;
+    border: 4px solid #4f46e5;
+    margin: 20px auto;
+    overflow: hidden;
+    display: none; /* Hidden until button clicked */
+    position: relative;
+    background: #000;
+}
+
+#reader {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* The Moving Red Line */
+.scan-line {
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: #ef4444;
+    top: 0;
+    left: 0;
+    animation: scan-anim 2s linear infinite;
+    z-index: 10;
+    box-shadow: 0 0 10px #ef4444;
+}
+
+@keyframes scan-anim {
+    0% { top: 0; }
+    50% { top: 100%; }
+    100% { top: 0; }
+}
+
+/* Big Scan Button */
+.btn-start-scan {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+    transition: transform 0.2s;
+}
+
+.btn-start-scan:active {
+    transform: scale(0.95);
+}
+
+/* Form Styles (for the result) */
+.result-card {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    margin-top: 20px;
+    text-align: left;
+}
+
+/* --- STOCK LOOKUP SPECIFIC STYLES --- */
+
+/* The Grid for Big Numbers (Total Qty) */
+.stock-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stock-stat {
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #4f46e5; /* Purple */
+}
+
+.stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280; /* Gray */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* The Table showing Batches & Locations */
+.stock-table-container {
+    margin-top: 20px;
+    border-top: 2px dashed #e5e7eb;
+    padding-top: 20px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 10px;
+}
+
+.location-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.location-table th {
+    text-align: left;
+    color: #9ca3af;
+    font-size: 11px;
+    text-transform: uppercase;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.location-table td {
+    padding: 12px 0;
+    border-bottom: 1px solid #f9fafb;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.location-badge {
+    background: #e0e7ff;
+    color: #4f46e5;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
