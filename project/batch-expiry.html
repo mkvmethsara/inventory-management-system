@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Batch & Expiry</title>
+
+<style>
+body{
+    margin:0;
+    background:#0b1326;
+    color:white;
+    font-family:system-ui, sans-serif;
+}
+
+.header{
+    height:64px;
+    background:#111c3a;
+    display:flex;
+    align-items:center;
+    padding:0 22px;
+    font-weight:700;
+}
+
+.layout{
+    display:flex;
+    min-height:calc(100vh - 64px);
+}
+
+.sidebar{
+    width:220px;
+    background:#0f1a33;
+    padding:18px 12px;
+}
+
+.sidebar a{
+    display:block;
+    padding:12px 14px;
+    margin-bottom:8px;
+    border-radius:10px;
+    color:#c9d6ff;
+    text-decoration:none;
+    font-weight:600;
+}
+
+.sidebar a:hover{
+    background:#4f46e5;
+    color:white;
+}
+
+.main{
+    flex:1;
+    padding:24px;
+}
+
+.card{
+    background:#16234a;
+    border-radius:16px;
+    padding:20px;
+}
+
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.filters{
+    display:flex;
+    gap:10px;
+}
+
+.filters input, .filters select{
+    padding:10px 12px;
+    border-radius:8px;
+    border:none;
+    outline:none;
+}
+
+.add-btn{
+    background:#4f46e5;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+th,td{
+    padding:12px 10px;
+    text-align:left;
+}
+
+th{
+    background:#1d2c5c;
+}
+
+tr:nth-child(even){
+    background:#14204a;
+}
+
+.badge{
+    padding:4px 10px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.ok{ background:#1f7a3f; }
+.expiring{ background:#b45309; }
+.expired{ background:#9f1239; }
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.modal-box{
+    background:#16234a;
+    padding:20px;
+    border-radius:14px;
+    width:320px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.modal-box input,
+.modal-box select{
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    outline:none;
+}
+
+.form-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:10px;
+}
+
+.form-actions button{
+    padding:8px 14px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.form-actions .cancel{
+    background:#334155;
+    color:white;
+}
+
+.form-actions button:not(.cancel){
+    background:#4f46e5;
+    color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    TrackFlow – Batch & Expiry
+</div>
+
+<div class="layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="items-inventory.html">Items Inventory</a>
+        <a href="batch-expiry.html">Batch & Expiry</a>
+        <a href="stock-location.html">Stock by Location</a>
+        <a href="locations.html">Locations</a>
+        <a href="suppliers.html">Suppliers</a>
+        <a href="staff.html">Staff Management</a>
+        <a href="transactions.html">Transaction Logs</a>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <div class="card">
+
+            <div class="top-bar">
+
+                <div class="filters">
+                    <input type="text" id="searchInput" placeholder="Search item / batch...">
+
+                    <select id="statusFilter">
+    <option value="all">All Status</option>
+    <option value="valid">Valid</option>
+    <option value="expiring">Expiring Soon</option>
+    <option value="expired">Expired</option>
+</select>
+
+                </div>
+
+               <button class="add-btn" id="openBatchBtn">+ Add Batch</button>
+
+
+            </div>
+
+            <table id="batchTable">
+
+                <thead>
+                    <tr>
+                        <th>Item ID</th>
+                        <th>Item Name</th>
+                        <th>Batch No</th>
+                        <th>Quantity</th>
+                        <th>Manufacture Date</th>
+                        <th>Expiry Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>ITM001</td>
+                        <td>Printer Ink</td>
+                        <td>BCH-2401</td>
+                        <td>45</td>
+                        <td>2025-01-10</td>
+                        <td>2026-01-10</td>
+                        <td><span class="badge ok">Valid</span></td>
+                    </tr>
+
+                    <tr>
+                        <td>ITM002</td>
+                        <td>Mouse</td>
+                        <td>BCH-2407</td>
+                        <td>18</td>
+                        <td>2024-07-15</td>
+                        <td>2026-03-01</td>
+                        <td><span class="badge expiring">Expiring Soon</span></td>
+                    </tr>
+
+                    <tr>
+                        <td>ITM003</td>
+                        <td>Cleaning Liquid</td>
+                        <td>BCH-2302</td>
+                        <td>0</td>
+                        <td>2023-02-20</td>
+                        <td>2025-02-20</td>
+                        <td><span class="badge expired">Expired</span></td>
+                    </tr>
+                </tbody>
+            </table>
+<!-- Add Batch Modal -->
+<div id="batchModal" class="modal">
+
+  <div class="modal-box">
+    <h3>Add New Batch</h3>
+
+    <input type="text" id="bItemId" placeholder="Item ID">
+    <input type="text" id="bItemName" placeholder="Item Name">
+    <input type="text" id="bBatchNo" placeholder="Batch No">
+    <input type="number" id="bQty" placeholder="Quantity">
+    <input type="date" id="bMfg">
+    <input type="date" id="bExp">
+
+    <select id="bStatus">
+        <option value="Valid">Valid</option>
+        <option value="Expiring Soon">Expiring Soon</option>
+        <option value="Expired">Expired</option>
+    </select>
+
+    <div class="form-actions">
+        <button id="saveBatchBtn">Save</button>
+        <button id="closeBatchBtn" class="cancel">Cancel</button>
+    </div>
+
+  </div>
+</div>
+
+        </div>
+
+    </div>
+
+</div>
+<script>
+const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+const table = document.getElementById("batchTable");
+
+function filterTable(){
+
+    const searchValue = searchInput.value.toLowerCase();
+    const statusValue = statusFilter.value.toLowerCase();
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    rows.forEach(row => {
+
+        const rowText = row.textContent.toLowerCase();
+
+        const statusCell = row.querySelector("td:last-child").textContent.toLowerCase();
+
+        let matchesSearch = rowText.includes(searchValue);
+        let matchesStatus = statusValue === "all" || statusCell.includes(statusValue);
+
+        row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
+
+    });
+
+}
+
+searchInput.addEventListener("keyup", filterTable);
+statusFilter.addEventListener("change", filterTable);
+</script>
+<script>
+const openBatchBtn  = document.getElementById("openBatchBtn");
+const closeBatchBtn = document.getElementById("closeBatchBtn");
+const batchModal    = document.getElementById("batchModal");
+const saveBatchBtn  = document.getElementById("saveBatchBtn");
+
+const batchBody = document.querySelector("#batchTable tbody");
+
+openBatchBtn.onclick = () => {
+    batchModal.style.display = "flex";
+};
+
+closeBatchBtn.onclick = () => {
+    batchModal.style.display = "none";
+};
+
+saveBatchBtn.onclick = () => {
+
+    const itemId   = document.getElementById("bItemId").value.trim();
+    const itemName = document.getElementById("bItemName").value.trim();
+    const batchNo  = document.getElementById("bBatchNo").value.trim();
+    const qty      = document.getElementById("bQty").value.trim();
+    const mfg      = document.getElementById("bMfg").value;
+    const exp      = document.getElementById("bExp").value;
+    const status   = document.getElementById("bStatus").value;
+
+    if(!itemId || !itemName || !batchNo || !qty || !mfg || !exp){
+        alert("Please fill all fields");
+        return;
+    }
+
+    let badgeClass = "ok";
+    if(status === "Expiring Soon") badgeClass = "expiring";
+    if(status === "Expired") badgeClass = "expired";
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>${itemId}</td>
+        <td>${itemName}</td>
+        <td>${batchNo}</td>
+        <td>${qty}</td>
+        <td>${mfg}</td>
+        <td>${exp}</td>
+        <td><span class="badge ${badgeClass}">${status}</span></td>
+    `;
+
+    batchBody.appendChild(row);
+
+    batchModal.style.display = "none";
+
+    document.getElementById("bItemId").value = "";
+    document.getElementById("bItemName").value = "";
+    document.getElementById("bBatchNo").value = "";
+    document.getElementById("bQty").value = "";
+    document.getElementById("bMfg").value = "";
+    document.getElementById("bExp").value = "";
+};
+</script>
+
+</body>
+</html>
