@@ -1259,3 +1259,131 @@ tr:hover {
 .dash-section div {
     border: 1px dashed #334155; /* Dashed border for the "Coming Soon" box */
 }
+
+/* --- General Page Styles --- */
+body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #f2f3f7;
+}
+
+/* --- Header Section --- */
+.header {
+    background: linear-gradient(135deg, #5a48f5, #3c34c9);
+    color: white;
+    padding: 20px 20px 60px 20px; /* Extra padding at bottom for overlap */
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+    text-align: center;
+    position: relative;
+}
+
+.header h1 {
+    margin: 10px 0 5px;
+    font-size: 24px;
+}
+
+/* --- Main Container --- */
+.container {
+    padding: 20px;
+    max-width: 500px;
+    margin: -50px auto 0; /* Pulls container up over the header */
+    position: relative;
+    z-index: 10;
+}
+
+/* --- Card Style --- */
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+}
+
+/* --- Form Inputs --- */
+input[type="text"], 
+input[type="number"], 
+select {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: 0.3s;
+    background: #f9fafb;
+}
+
+input:focus, select:focus {
+    border-color: #5a48f5;
+    background: white;
+    outline: none;
+}
+
+/* --- Buttons --- */
+.btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+    margin-top: 10px;
+    transition: 0.2s;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-scan {
+    background: #111827; /* Dark Black/Blue */
+}
+
+.btn-save {
+    background: #22c55e; /* Green */
+}
+
+.btn-back {
+    background: #e5e7eb;
+    color: #374151;
+    display: block;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-back:hover {
+    background: #d1d5db;
+}
+
+/* --- Item Preview Box --- */
+.item-preview {
+    text-align: center;
+    padding: 20px;
+    background: #f0fdf4; /* Light Green Tint */
+    border-radius: 15px;
+    border: 2px dashed #22c55e;
+    margin-bottom: 15px;
+}
+
+.item-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #166534;
+    margin: 5px 0;
+}
+
+/* --- Messages --- */
+.message {
+    text-align: center;
+    font-weight: bold;
+    padding: 15px;
+    background: #dbeafe;
+    color: #1e40af;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
