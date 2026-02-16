@@ -100,6 +100,35 @@ $result = mysqli_query($conn, $sql);
 
     </div>
 
+    <style>
+        .float-home-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e1b4b;
+            /* Matches your dashboard header color */
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+            font-size: 24px;
+            z-index: 9999;
+            transition: transform 0.2s;
+        }
+
+        .float-home-btn:hover {
+            transform: scale(1.1);
+            background: #312e81;
+        }
+    </style>
+
+    <a href="staff_dashboard.php" class="float-home-btn" title="Back to Dashboard">🏠</a>
+
 </body>
 
 </html>

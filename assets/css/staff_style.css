@@ -195,66 +195,131 @@
     }
 }
 
-/* --- RECENT ACTIVITY TIMELINE STYLES --- */
+/* --- MODERN RESULT CARD --- */
 
-.activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-/* The Activity Card */
-.activity-card {
+/* The Card Itself */
+.result-card {
     background: white;
-    padding: 15px;
-    border-radius: 16px;
-    border-left: 5px solid #ddd; /* Color bar on left */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    max-width: 450px;
+    margin: 20px auto;
+    padding: 30px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(79, 70, 229, 0.15); /* Soft Purple Shadow */
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    animation: popIn 0.4s ease-out;
 }
 
-/* Color Coding for different actions */
-.type-IN { border-left-color: #22c55e; }   /* Green for Receive */
-.type-OUT { border-left-color: #ef4444; }  /* Red for Remove */
-.type-MOVE { border-left-color: #4f46e5; } /* Blue for Move */
-
-.act-content {
-    flex: 1;
+@keyframes popIn {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-.act-title {
-    font-weight: 700;
-    font-size: 15px;
-    color: #1f2937;
-    margin-bottom: 4px;
+/* Item Found Header */
+.item-header {
+    margin-bottom: 25px;
+    border-bottom: 2px dashed #f3f4f6;
+    padding-bottom: 15px;
 }
 
-.act-desc {
-    font-size: 13px;
-    color: #6b7280;
-}
-
-.act-time {
-    font-size: 11px;
-    font-weight: 600;
-    color: #9ca3af;
-    background: #f3f4f6;
-    padding: 4px 8px;
-    border-radius: 8px;
-    white-space: nowrap;
-    margin-left: 10px;
-}
-
-/* Badge for Quantity */
-.qty-badge {
+.badge-success {
+    background: #dcfce7;
+    color: #166534;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 20px;
     display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: bold;
-    margin-left: 5px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
 }
-.bg-green { background: #dcfce7; color: #166534; }
-.bg-blue { background: #e0e7ff; color: #4338ca; }
+
+.item-name-large {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 5px 0;
+}
+
+.item-code-small {
+    font-family: 'Courier New', monospace;
+    color: #6b7280;
+    font-size: 14px;
+    background: #f9fafb;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* Inputs */
+.modern-form-group {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.modern-form-group label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4b5563;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.modern-select, .modern-input {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    background: #f9fafb;
+    transition: 0.3s;
+    outline: none;
+}
+
+.modern-select:focus, .modern-input:focus {
+    border-color: #4f46e5;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* Action Buttons */
+.btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.btn-confirm {
+    flex: 2;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transition: 0.2s;
+}
+
+.btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4); }
+
+.btn-cancel-modern {
+    flex: 1;
+    background: #fee2e2;
+    color: #991b1b;
+    text-decoration: none;
+    padding: 16px;
+    border-radius: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.btn-cancel-modern:hover { background: #fecaca; }
