@@ -1,159 +1,172 @@
 <?php
 include '../config/db.php';
 
-// --- 1. HANDLE FORM SUBMISSION ---
-$message = "";
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $loc_code = $_POST['location_code'];
-    $loc_desc = $_POST['description'];
+// --- 1. HANDLE UPDATE LOCATION ---
+if (isset($_POST['update_btn'])) {
+    $id   = $_POST['location_id'];
+    $code = $_POST['location_code'];
+    $desc = $_POST['description'];
 
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    $sql = "UPDATE locations SET location_code='$code', description='$desc' WHERE location_id='$id'";
 
-    $sql_insert = "INSERT INTO locations (location_code, description) 
-                   VALUES ('$loc_code', '$loc_desc')";
-
-    if (mysqli_query($conn, $sql_insert)) {
-        $message = "<script>alert('✅ Location Added Successfully!'); window.location.href='locations.php';</script>";
+    if (mysqli_query($conn, $sql)) {
+        echo "<script>alert('✅ Location Updated!'); window.location.href='locations.php';</script>";
     } else {
-        $error = mysqli_error($conn);
-        $message = "<div style='background:#9f1239; color:white; padding:10px; margin-bottom:15px; border-radius:8px;'>❌ Error: $error</div>";
+        echo "<script>alert('❌ Error: " . mysqli_error($conn) . "');</script>";
     }
 }
 
-// --- 2. GET DATA ---
-$sql = "SELECT * FROM locations ORDER BY location_id DESC";
+// --- 2. HANDLE DELETE LOCATION ---
+if (isset($_GET['delete_id'])) {
+    $id = $_GET['delete_id'];
+    try {
+        if (mysqli_query($conn, "DELETE FROM locations WHERE location_id = '$id'")) {
+            echo "<script>alert('✅ Location Deleted!'); window.location.href='locations.php';</script>";
+        }
+    } catch (Exception $e) {
+        // This proves you understand Data Integrity!
+        echo "<script>alert('⚠️ SECURITY ALERT: Cannot delete this Location! \\n\\nThere is currently stock stored here. Please move the stock first.'); window.location.href='locations.php';</script>";
+    }
+}
+
+// --- 3. HANDLE ADD LOCATION ---
+if (isset($_POST['add_btn'])) {
+    $code = $_POST['location_code'];
+    $desc = $_POST['description'];
+
+    $sql = "INSERT INTO locations (location_code, description) VALUES ('$code', '$desc')";
+    if (mysqli_query($conn, $sql)) {
+        echo "<script>alert('✅ New Location Added!'); window.location.href='locations.php';</script>";
+    }
+}
+
+// --- 4. PREPARE EDIT DATA ---
+$edit_mode = false;
+$edit_data = ['location_code' => '', 'description' => '', 'location_id' => ''];
+
+if (isset($_GET['edit_id'])) {
+    $edit_mode = true;
+    $id = $_GET['edit_id'];
+    $res = mysqli_query($conn, "SELECT * FROM locations WHERE location_id='$id'");
+    $edit_data = mysqli_fetch_assoc($res);
+}
+
+// --- 5. FETCH LIST ---
+// We also count how many stock batches are currently in this location
+$sql = "SELECT l.*, (SELECT COUNT(*) FROM stock s WHERE s.location_id = l.location_id) as stock_count FROM locations l";
 $result = mysqli_query($conn, $sql);
 ?>
 
 <!DOCTYPE html>
-<html lang="en" class="admin-dash-page">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>Locations Management</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackFlow – Locations</title>
     <link rel="stylesheet" href="../assets/css/style.css">
-
     <style>
-        /* 1. The Overlay */
-        #locModal {
-            display: none;
-            /* Hidden by default */
-            position: fixed !important;
-            /* Force floating */
-            z-index: 999999 !important;
-            /* Force on top */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8) !important;
-            backdrop-filter: blur(5px);
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* 2. The Box */
-        .custom-modal-content {
-            background-color: #0f172a;
-            padding: 30px;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border: 1px solid #1e293b;
-            position: relative;
-            display: block;
-            /* Ensure content is visible */
-        }
-
-        /* 3. Inputs - White with Black Text */
-        .custom-modal-content input,
-        .custom-modal-content textarea {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            background: #ffffff !important;
-            color: #000000 !important;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            outline: none;
-            font-family: sans-serif;
-            box-sizing: border-box;
-        }
-
-        .custom-modal-content h3 {
-            margin-top: 0;
-            color: white;
+        /* --- UI STYLES (Matches Suppliers Page) --- */
+        .form-box-fixed {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
             margin-bottom: 20px;
-        }
-
-        .custom-modal-content label {
-            color: #cbd5e1;
-            margin-bottom: 5px;
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        /* 4. Buttons */
-        .btn-group {
+            border: 1px solid #334155;
             display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 10px;
+            align-items: center;
+            gap: 15px;
         }
 
-        .btn-cancel {
-            background: #334155;
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            width: auto !important;
+        .input-fixed {
+            background-color: #ffffff !important;
+            color: black !important;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            flex: 1;
+            border: 1px solid #cbd5e1;
         }
 
-        .btn-save {
-            background: #4f46e5;
-            color: white;
+        .btn-fixed {
+            padding: 10px 25px;
+            border-radius: 5px;
             border: none;
-            padding: 10px 18px;
-            border-radius: 6px;
-            cursor: pointer;
             font-weight: bold;
+            cursor: pointer;
+            color: white;
+            white-space: nowrap;
             width: auto !important;
+        }
+
+        /* Table Buttons */
+        .btn-edit {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid #fbbf24;
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
         }
     </style>
 </head>
 
-<body>
+<body class="admin-dash-page">
 
-    <div class="header">TrackFlow – Locations</div>
+    <div class="header">TrackFlow – Warehouse Locations</div>
 
     <div class="layout">
         <?php include 'menu.php'; ?>
 
         <div class="main">
+
+            <div class="form-box-fixed" style="<?php echo $edit_mode ? 'border-color:#fbbf24;' : ''; ?>">
+
+                <h4 style="margin:0; color:<?php echo $edit_mode ? '#fbbf24' : '#c9d6ff'; ?>; width:100px; flex-shrink:0;">
+                    <?php echo $edit_mode ? '✏️ Edit:' : '+ Add New:'; ?>
+                </h4>
+
+                <form method="POST" style="display:flex; gap:10px; width:100%; align-items:center;">
+                    <input type="hidden" name="location_id" value="<?php echo $edit_data['location_id']; ?>">
+
+                    <input type="text" name="location_code" class="input-fixed" placeholder="Location Code (e.g. Aisle-01)" required
+                        value="<?php echo $edit_data['location_code']; ?>">
+
+                    <input type="text" name="description" class="input-fixed" placeholder="Description (e.g. Main Rack for Snacks)" required
+                        value="<?php echo $edit_data['description']; ?>" style="flex:2;">
+
+                    <?php if ($edit_mode): ?>
+                        <button type="submit" name="update_btn" class="btn-fixed" style="background:#fbbf24; color:black;">Update Location</button>
+                        <a href="locations.php" class="btn-fixed" style="background:#475569; text-decoration:none; display:inline-block; text-align:center;">Cancel</a>
+                    <?php else: ?>
+                        <button type="submit" name="add_btn" class="btn-fixed" style="background:#4f46e5;">Save Location</button>
+                    <?php endif; ?>
+                </form>
+            </div>
+
             <div class="card">
-                <?php echo $message; ?>
-
-                <div class="top-bar">
-                    <div class="filters">
-                        <input type="text" id="searchInput" placeholder="Search location..." style="width: 300px;">
-                    </div>
-                    <button class="add-btn" onclick="openPopup()">+ Add Location</button>
-                </div>
-
+                <h3 style="margin-top:0;">Storage Locations</h3>
                 <table id="locTable">
                     <thead>
                         <tr>
-                            <th>Location ID</th>
-                            <th>Name / Code</th>
+                            <th>ID</th>
+                            <th>Location Code</th>
                             <th>Description</th>
-                            <th>Status</th>
+                            <th>Occupied By</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -161,14 +174,23 @@ $result = mysqli_query($conn, $sql);
                         if (mysqli_num_rows($result) > 0) {
                             while ($row = mysqli_fetch_assoc($result)) {
                                 echo "<tr>";
-                                echo "<td style='opacity:0.7;'>LOC-" . str_pad($row['location_id'], 3, '0', STR_PAD_LEFT) . "</td>";
-                                echo "<td style='font-weight:bold; color:#c9d6ff;'>" . $row['location_code'] . "</td>";
-                                echo "<td>" . ($row['description'] ? $row['description'] : 'No description') . "</td>";
-                                echo "<td><span class='badge ok'>Active</span></td>";
+                                echo "<td style='opacity:0.5;'>#" . $row['location_id'] . "</td>";
+                                echo "<td style='font-weight:bold; color:#c9d6ff; font-family:monospace;'>" . $row['location_code'] . "</td>";
+                                echo "<td>" . $row['description'] . "</td>";
+
+                                // Show count of stock batches here
+                                $badge_color = ($row['stock_count'] > 0) ? '#22c55e' : '#64748b';
+                                $bg_color = ($row['stock_count'] > 0) ? 'rgba(34,197,94,0.2)' : 'rgba(100,116,139,0.2)';
+                                echo "<td><span style='background:$bg_color; color:$badge_color; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;'>" . $row['stock_count'] . " Batches</span></td>";
+
+                                echo "<td>";
+                                echo "<a href='locations.php?edit_id=" . $row['location_id'] . "' class='btn-edit'>✏️ Edit</a>";
+                                echo "<a href='locations.php?delete_id=" . $row['location_id'] . "' class='btn-delete' onclick=\"return confirm('⚠️ Are you sure?');\">🗑 Delete</a>";
+                                echo "</td>";
                                 echo "</tr>";
                             }
                         } else {
-                            echo "<tr><td colspan='4' style='text-align:center; padding:30px; opacity:0.5;'>No locations found.</td></tr>";
+                            echo "<tr><td colspan='5' style='text-align:center;'>No locations found.</td></tr>";
                         }
                         ?>
                     </tbody>
@@ -176,55 +198,6 @@ $result = mysqli_query($conn, $sql);
             </div>
         </div>
     </div>
-
-    <div id="locModal">
-        <div class="custom-modal-content">
-            <h3>Add New Location</h3>
-
-            <form method="POST" action="">
-                <label>Location Name / Code</label>
-                <input type="text" name="location_code" placeholder="E.g. Main Warehouse" required>
-
-                <label>Description</label>
-                <textarea name="description" rows="3" placeholder="E.g. Main storage facility in Colombo"></textarea>
-
-                <div class="btn-group">
-                    <button type="button" class="btn-cancel" onclick="closePopup()">Cancel</button>
-                    <button type="submit" class="btn-save">Save Location</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // Force Flex Display to Center the Modal
-        function openPopup() {
-            document.getElementById("locModal").style.display = "flex";
-        }
-
-        function closePopup() {
-            document.getElementById("locModal").style.display = "none";
-        }
-
-        // Close on Outside Click
-        window.onclick = function(event) {
-            if (event.target == document.getElementById("locModal")) {
-                closePopup();
-            }
-        }
-
-        // Search Function
-        const searchInput = document.getElementById("searchInput");
-        const table = document.getElementById("locTable");
-
-        searchInput.addEventListener("keyup", function() {
-            const val = searchInput.value.toLowerCase();
-            table.querySelectorAll("tbody tr").forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(val) ? "" : "none";
-            });
-        });
-    </script>
 
 </body>
 
