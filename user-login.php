@@ -26,13 +26,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Redirect to Staff Dashboard
             header("Location: staff_dashboard.php");
             exit();
-        }
-        // FALLBACK: If you manually added "123" to the database without encryption
-        elseif ($password == $row['password']) {
-            $_SESSION['user_id'] = $row['user_id'];
-            $_SESSION['role'] = $row['role'];
-            header("Location: staff_dashboard.php");
-            exit();
         } else {
             $error = "❌ Incorrect Password!";
         }

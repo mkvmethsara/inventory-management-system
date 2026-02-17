@@ -1,48 +1,34 @@
 <?php
-session_start(); // Start session to remember the logged-in user
+session_start();
 include 'config/db.php';
 
 $error = "";
 
-if (isset($_POST['login_btn'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
 
-    // 1. Get the user record based on Username ONLY
-    $query = "SELECT * FROM users WHERE username = '$username'";
-    $result = mysqli_query($conn, $query);
+    // 1. CHECK DATABASE FOR USER
+    $sql = "SELECT * FROM users WHERE username = '$username'";
+    $result = mysqli_query($conn, $sql);
 
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
-        $stored_pass = $row['password'];
 
-        // 2. HYBRID CHECK: Supports both Hashed (New) and Plain Text (Old) passwords
-        $login_success = false;
+        // 2. CHECK PASSWORD
+        if (password_verify($password, $row['password'])) {
 
-        // Check A: Is it a secure hash? (For Methsara)
-        if (password_verify($password, $stored_pass)) {
-            $login_success = true;
-        }
-        // Check B: Is it plain text? (For 'user' / 1234)
-        else if ($password === $stored_pass) {
-            $login_success = true;
-        }
-
-        if ($login_success) {
-            // 3. Set Session Variables
-            $_SESSION['user_id'] = $row['user_id'];
-            $_SESSION['username'] = $row['username'];
-            $_SESSION['role'] = $row['role'];
-
-            // 4. Redirect based on Role
-            if ($row['role'] == 'admin') {
-                header("Location: admin/dashboard.php");
+            // 3. SECURITY CHECK: IS THIS USER AN ADMIN? 🛡️
+            if ($row['role'] == 'Admin') {
+                // Yes, they are Admin. Let them in.
+                $_SESSION['user_id'] = $row['user_id'];
+                $_SESSION['role'] = 'Admin';
+                header("Location: admin/dashboard.php"); // Go to Admin Dashboard
+                exit();
             } else {
-                // If you haven't built staff/dashboard.php yet, send them to admin for now
-                // or create a simple 'staff/dashboard.php' later.
-                header("Location: admin/dashboard.php");
+                // No, they are Staff. KICK THEM OUT! ❌
+                $error = "🚫 Access Denied! You are Staff, not Admin.";
             }
-            exit();
         } else {
             $error = "❌ Incorrect Password!";
         }
@@ -57,42 +43,77 @@ if (isset($_POST['login_btn'])) {
 
 <head>
     <meta charset="UTF-8">
-    <title>TrackFlow Login</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title>Admin Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #1e1b4b;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            width: 350px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .staff-link {
+            display: block;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #666;
+            text-decoration: none;
+        }
+    </style>
 </head>
 
 <body>
     <div class="login-card">
-        <div class="logo">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
-        </div>
+        <h2>Admin Portal 🔒</h2>
 
-        <h1>TrackFlow</h1>
-        <div class="subtitle">Inventory Management System</div>
+        <?php if ($error) {
+            echo "<div class='error'>$error</div>";
+        } ?>
 
-        <form action="index.php" method="POST">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" name="username" placeholder="Enter username" required>
-            </div>
-
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="Enter password" required>
-            </div>
-
-            <button type="submit" name="login_btn">Sign In</button>
-
-            <?php if ($error != "") { ?>
-                <p style="color: #ef4444; margin-top: 15px; font-weight: 600; font-size: 14px;"><?php echo $error; ?></p>
-            <?php } ?>
+        <form method="POST">
+            <input type="text" name="username" placeholder="Admin Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
         </form>
 
-        <div class="footer-text">
-            &copy; 2026 NSBM Green University Project
-        </div>
+        <a href="user-login.php" class="staff-link">Are you Staff? Click here</a>
     </div>
 </body>
 

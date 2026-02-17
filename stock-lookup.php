@@ -15,7 +15,7 @@ $error_msg = "";
 
 // 2. HANDLE QR SCAN
 if (isset($_POST['qr_code'])) {
-    $code = trim($_POST['qr_code']);
+    $code = mysqli_real_escape_string($conn, trim($_POST['qr_code']));
 
     if (filter_var($code, FILTER_VALIDATE_URL)) {
         $error_msg = "⚠️ You scanned a Website Link! Please use a Text-Only QR.";

@@ -42,7 +42,7 @@ if (isset($_POST['save_stock'])) {
 
 // 4. HANDLE QR SCAN
 if (isset($_POST['qr_code'])) {
-    $code = trim($_POST['qr_code']);
+    $code = mysqli_real_escape_string($conn, trim($_POST['qr_code']));
 
     // Check for "Website URL" mistake
     if (filter_var($code, FILTER_VALIDATE_URL)) {
