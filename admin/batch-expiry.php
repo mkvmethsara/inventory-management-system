@@ -1,253 +1,191 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // SECURITY GATE 🔒
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-    // If not logged in, or not an Admin, kick them out
     header("Location: ../index.php");
     exit();
 }
-?>
 
-<?php
 include '../config/db.php';
 
 // --- 1. HANDLE FORM SUBMISSION ---
-$message = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $item_id = $_POST['item_id'];
     $qty = $_POST['quantity'];
     $received = $_POST['received_date'];
     $expiry = $_POST['expiry_date'];
 
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
-
-    $sql_batch = "INSERT INTO item_batches (item_id, received_date, expiry_date) 
-                  VALUES ('$item_id', '$received', '$expiry')";
-
+    $sql_batch = "INSERT INTO item_batches (item_id, received_date, expiry_date) VALUES ('$item_id', '$received', '$expiry')";
     if (mysqli_query($conn, $sql_batch)) {
         $new_batch_id = mysqli_insert_id($conn);
-        $sql_stock = "INSERT INTO stock (item_id, batch_id, location_id, quantity) 
-                      VALUES ('$item_id', '$new_batch_id', 1, '$qty')";
-
-        if (mysqli_query($conn, $sql_stock)) {
-            $message = "<script>alert('✅ Batch Added Successfully!'); window.location.href='batch-expiry.php';</script>";
-        } else {
-            $error = mysqli_error($conn);
-            $message = "<div style='background:#9f1239; color:white; padding:10px; margin-bottom:15px; border-radius:8px;'>❌ Stock Error: $error</div>";
-        }
-    } else {
-        $error = mysqli_error($conn);
-        $message = "<div style='background:#9f1239; color:white; padding:10px; margin-bottom:15px; border-radius:8px;'>❌ Batch Error: $error</div>";
+        $sql_stock = "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', '$new_batch_id', 1, '$qty')";
+        mysqli_query($conn, $sql_stock);
+        echo "<script>window.location.href='batch-expiry.php';</script>";
     }
 }
 
 // --- 2. GET DATA ---
 $items_result = mysqli_query($conn, "SELECT item_id, item_name FROM items ORDER BY item_name ASC");
 
-$sql = "SELECT 
-            b.batch_id, b.expiry_date, b.received_date, 
-            i.item_name, i.item_code,
-            COALESCE(SUM(s.quantity), 0) as batch_qty
+// Fetch Batches
+$sql = "SELECT b.batch_id, b.expiry_date, b.received_date, i.item_name, i.category, i.item_code, COALESCE(SUM(s.quantity), 0) as batch_qty
         FROM item_batches b
         JOIN items i ON b.item_id = i.item_id
         LEFT JOIN stock s ON b.batch_id = s.batch_id
-        GROUP BY b.batch_id
-        ORDER BY b.expiry_date ASC";
+        GROUP BY b.batch_id ORDER BY b.expiry_date ASC";
 $result = mysqli_query($conn, $sql);
 ?>
 
 <!DOCTYPE html>
-<html lang="en" class="admin-dash-page">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>Batch & Expiry</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>TrackFlow – Batch Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css?v=8">
 
     <style>
-        /* 1. The Overlay - This makes it FLOAT */
-        .custom-modal {
-            display: none;
-            /* Hidden by default */
-            position: fixed;
-            /* STICK TO SCREEN */
-            z-index: 999999;
-            /* TOP PRIORITY */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            /* Dark Dim */
-            backdrop-filter: blur(4px);
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* 2. The Box */
-        .custom-modal-content {
-            background-color: #0f172a;
-            /* Dark Blue */
-            padding: 30px;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border: 1px solid #1e293b;
-            animation: zoomIn 0.2s ease-out;
-        }
-
-        @keyframes zoomIn {
-            from {
-                transform: scale(0.95);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        /* 3. Inputs - WHITE (Vishwa Style) */
-        .custom-modal label {
-            display: block;
-            color: #cbd5e1;
-            margin-bottom: 6px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .custom-modal input,
-        .custom-modal select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            background: #ffffff !important;
-            /* FORCE WHITE */
-            color: #000000 !important;
-            /* FORCE BLACK TEXT */
-            border: 2px solid #e2e8f0;
+        /* NEW DROPDOWN STYLE */
+        .tf-search-select {
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
             outline: none;
+            min-width: 180px;
         }
 
-        /* 4. Buttons - SMALL & RIGHT ALIGNED */
-        .btn-group {
-            display: flex;
-            justify-content: flex-end;
-            /* Push to right */
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .btn-cancel {
-            background: #334155;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            width: auto !important;
-        }
-
-        .btn-save {
-            background: #4f46e5;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            width: auto !important;
-            font-weight: bold;
+        .tf-search-select:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
     </style>
 </head>
 
-<body>
+<body class="trackflow-body">
 
-    <div class="header">TrackFlow – Batch & Expiry</div>
+    <aside class="tf-sidebar">
+        <div class="tf-logo">
+            <i class="bi bi-box-seam-fill"></i> TRACKFLOW
+        </div>
+        <nav class="tf-nav">
+            <a href="dashboard.php"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="items-inventory.php"><i class="bi bi-box"></i> Items Inventory</a>
+            <a href="batch-expiry.php"><i class="bi bi-clock-history"></i> Batch & Expiry</a>
+            <a href="stock-location.php"><i class="bi bi-shop"></i> Stock by Location</a>
+            <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
+            <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
+            <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
 
-    <div class="layout">
-        <?php include 'menu.php'; ?>
 
-        <div class="main">
-            <div class="card">
-                <?php echo $message; ?>
+            <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
 
-                <div class="top-bar">
-                    <div class="filters">
-                        <input type="text" id="searchInput" placeholder="Search...">
-                        <select id="statusFilter">
-                            <option value="all">All Status</option>
-                            <option value="valid">Valid</option>
-                            <option value="expiring">Expiring Soon</option>
-                            <option value="expired">Expired</option>
-                        </select>
-                    </div>
-                    <button class="add-btn" onclick="openPopup()">+ Add Batch</button>
-                </div>
+            <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </aside>
 
-                <table id="batchTable">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Batch</th>
-                            <th>Qty</th>
-                            <th>Mfg Date</th>
-                            <th>Exp Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        if (mysqli_num_rows($result) > 0) {
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $expiry = $row['expiry_date'];
-                                $days_left = round((strtotime($expiry) - strtotime(date('Y-m-d'))) / 86400);
+    <main class="tf-main">
 
-                                $status = "valid";
-                                $badge = "ok";
-                                $text = "Valid";
-                                if ($days_left < 0) {
-                                    $status = "expired";
-                                    $badge = "expired";
-                                    $text = "Expired";
-                                } elseif ($days_left <= 30) {
-                                    $status = "expiring";
-                                    $badge = "expiring";
-                                    $text = "Expiring";
-                                }
+        <div class="tf-page-header">
+            <div class="tf-page-title">
+                <h2>Batch & Expiry Control</h2>
+                <p>Monitor expiry dates and batch quantities</p>
+            </div>
 
-                                echo "<tr data-status='$status'>";
-                                echo "<td><strong>" . $row['item_name'] . "</strong><br><span style='font-size:12px; opacity:0.7;'>" . $row['item_code'] . "</span></td>";
-                                echo "<td style='color:#a5b4fc;'>BCH-" . str_pad($row['batch_id'], 3, '0', STR_PAD_LEFT) . "</td>";
-                                echo "<td>" . $row['batch_qty'] . "</td>";
-                                echo "<td>" . $row['received_date'] . "</td>";
-                                echo "<td>" . $row['expiry_date'] . "</td>";
-                                echo "<td><span class='badge $badge'>$text</span></td>";
-                                echo "</tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='6' style='text-align:center; padding:30px; opacity:0.5;'>No batches found.</td></tr>";
-                        }
-                        ?>
-                    </tbody>
-                </table>
+            <div style="display:flex; gap:10px;">
+                <select class="tf-search-select" id="statusFilter" onchange="filterBatches()">
+                    <option value="all">Show All Batches</option>
+                    <option value="expiring">⚠️ Nearly Expire (90 Days)</option>
+                    <option value="expired">⛔ Expired Items</option>
+                </select>
+
+                <button onclick="openPopup()" class="tf-btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add Manual Batch
+                </button>
             </div>
         </div>
-    </div>
+
+        <div class="batch-list">
+            <?php
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    // Logic for Icon Color
+                    $cat = $row['category'] ?? 'General';
+                    $icon_color = 'blue';
+                    if ($cat == 'Medicine') $icon_color = 'purple';
+                    if ($cat == 'Supplies') $icon_color = 'orange';
+
+                    // Logic for Expiry Warning & Status Tag
+                    $expiry_date = $row['expiry_date'];
+                    $days_left = round((strtotime($expiry_date) - strtotime(date('Y-m-d'))) / 86400);
+
+                    $expiry_class = "";
+                    $expiry_icon = "";
+                    $status_tag = "valid"; // Default Status
+
+                    if ($days_left < 0) {
+                        $expiry_class = "expiry-danger"; // Red
+                        $expiry_icon = "<i class='bi bi-exclamation-triangle-fill'></i> ";
+                        $status_tag = "expired";
+                    } elseif ($days_left <= 90) {
+                        $expiry_class = "expiry-warning"; // Orange
+                        $expiry_icon = "<i class='bi bi-clock-history'></i> ";
+                        $status_tag = "expiring";
+                    }
+
+                    // Added 'data-status' to the main div for JS filtering
+                    echo '
+                    <div class="tf-batch-card" data-status="' . $status_tag . '">
+                        <div class="batch-left">
+                            <div class="batch-icon ' . $icon_color . '">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                            <div class="batch-info">
+                                <h4>' . $row['item_name'] . '</h4>
+                                <div class="batch-meta">
+                                    <span>BATCH ID: B' . $row['batch_id'] . '</span>
+                                    <span>• &nbsp; RECEIVED: ' . $row['received_date'] . '</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="batch-right">
+                            <div class="stat-group">
+                                <span class="stat-label">Quantity</span>
+                                <span class="stat-value">' . number_format($row['batch_qty']) . '</span>
+                            </div>
+
+                            <div class="stat-group" style="width: 140px;">
+                                <span class="stat-label">Expiry Date</span>
+                                <span class="stat-value ' . $expiry_class . '">' . $expiry_icon . $row['expiry_date'] . '</span>
+                            </div>
+
+                            <i class="bi bi-three-dots menu-dots"></i>
+                        </div>
+                    </div>';
+                }
+            } else {
+                echo "<p style='text-align:center; color:#9ca3af; margin-top:50px;'>No batches found.</p>";
+            }
+            ?>
+        </div>
+
+    </main>
 
     <div id="batchModal" class="custom-modal">
         <div class="custom-modal-content">
-            <h3 style="margin-top:0; color:white; margin-bottom:20px;">Add New Batch</h3>
+            <h3 style="margin-top:0; margin-bottom:20px;">Add New Batch</h3>
 
             <form method="POST" action="">
-                <label>Item Name</label>
+                <label>Select Item</label>
                 <select name="item_id" required>
                     <?php
                     if (mysqli_num_rows($items_result) > 0) {
@@ -270,14 +208,14 @@ $result = mysqli_query($conn, $sql);
 
                 <div class="btn-group">
                     <button type="button" class="btn-cancel" onclick="closePopup()">Cancel</button>
-                    <button type="submit" class="btn-save">Save</button>
+                    <button type="submit" class="btn-save">Save Batch</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Force Flex Display to Center the Modal
+        // Modal Logic
         function openPopup() {
             document.getElementById("batchModal").style.display = "flex";
         }
@@ -285,35 +223,30 @@ $result = mysqli_query($conn, $sql);
         function closePopup() {
             document.getElementById("batchModal").style.display = "none";
         }
-
-        // Close if clicking outside
         window.onclick = function(event) {
-            if (event.target == document.getElementById("batchModal")) {
-                closePopup();
-            }
+            if (event.target == document.getElementById("batchModal")) closePopup();
         }
 
-        // Search Logic
-        const searchInput = document.getElementById("searchInput");
-        const statusFilter = document.getElementById("statusFilter");
-        const table = document.getElementById("batchTable");
+        // ✅ NEW DROPDOWN FILTER LOGIC
+        function filterBatches() {
+            // 1. Get the value from the dropdown
+            const filterValue = document.getElementById('statusFilter').value;
+            const rows = document.querySelectorAll('.tf-batch-card');
 
-        function filterTable() {
-            const val = searchInput.value.toLowerCase();
-            const stat = statusFilter.value.toLowerCase();
-            table.querySelectorAll("tbody tr").forEach(row => {
-                const text = row.innerText.toLowerCase();
-                const status = row.getAttribute("data-status");
-                const matchSearch = text.includes(val);
-                const matchStatus = stat === "all" || status === stat;
-                row.style.display = (matchSearch && matchStatus) ? "" : "none";
+            rows.forEach(row => {
+                // 2. Get the status of the current card (valid, expiring, or expired)
+                const cardStatus = row.getAttribute('data-status');
+
+                // 3. Logic: If 'all' is selected, show everything.
+                // Otherwise, only show if card status matches the filter.
+                if (filterValue === 'all' || filterValue === cardStatus) {
+                    row.style.display = "flex";
+                } else {
+                    row.style.display = "none";
+                }
             });
         }
-
-        searchInput.addEventListener("keyup", filterTable);
-        statusFilter.addEventListener("change", filterTable);
     </script>
-
 </body>
 
 </html>

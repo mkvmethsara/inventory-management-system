@@ -1,18 +1,19 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // SECURITY GATE 🔒
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-    // If not logged in, or not an Admin, kick them out
     header("Location: ../index.php");
     exit();
 }
-?>
 
-<?php
 include '../config/db.php';
 
-// --- 1. HANDLE UPDATE ITEM (The 'U' in CRUD) ---
+// --- PHP LOGIC (Add/Edit/Delete) ---
+
+// 1. UPDATE ITEM
 if (isset($_POST['update_item_btn'])) {
     $id    = $_POST['item_id'];
     $name  = $_POST['item_name'];
@@ -21,33 +22,30 @@ if (isset($_POST['update_item_btn'])) {
     $sup   = $_POST['supplier_id'];
 
     $sql = "UPDATE items SET item_name='$name', item_code='$code', category='$cat', supplier_id='$sup' WHERE item_id='$id'";
-
     if (mysqli_query($conn, $sql)) {
-        echo "<script>alert('✅ Item Updated Successfully!'); window.location.href='items-inventory.php';</script>";
-    } else {
-        echo "<script>alert('❌ Error: " . mysqli_error($conn) . "');</script>";
+        echo "<script>window.location.href='items-inventory.php';</script>";
     }
 }
 
-// --- 2. HANDLE DELETE ITEM ---
+// 2. DELETE ITEM
 if (isset($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
     try {
         if (mysqli_query($conn, "DELETE FROM items WHERE item_id = '$id'")) {
-            echo "<script>alert('✅ Item Deleted!'); window.location.href='items-inventory.php';</script>";
+            echo "<script>window.location.href='items-inventory.php';</script>";
         }
     } catch (Exception $e) {
-        echo "<script>alert('⚠️ SECURITY ALERT: Cannot delete this item because it has transaction history. \\n\\nSet quantity to 0 instead.'); window.location.href='items-inventory.php';</script>";
+        echo "<script>alert('⚠️ Cannot delete: This item has transaction history.'); window.location.href='items-inventory.php';</script>";
     }
 }
 
-// --- 3. HANDLE ADD ITEM ---
+// 3. ADD ITEM
 if (isset($_POST['add_item_btn'])) {
     $name = $_POST['item_name'];
     $code = $_POST['item_code'];
     $cat  = $_POST['category'];
     $sup  = $_POST['supplier_id'];
-    // Auto-generate some required fields for now
+    // Auto-generate RFID and Min Level for demo
     $rfid = "RF-" . rand(1000, 9999);
     $min  = 10;
 
@@ -55,25 +53,12 @@ if (isset($_POST['add_item_btn'])) {
             VALUES ('$name', '$code', '$cat', '$sup', '$rfid', '$min', NOW())";
 
     if (mysqli_query($conn, $sql)) {
-        echo "<script>alert('✅ New Item Added!'); window.location.href='items-inventory.php';</script>";
-    } else {
-        echo "<script>alert('Error: " . mysqli_error($conn) . "');</script>";
+        echo "<script>window.location.href='items-inventory.php';</script>";
     }
 }
 
-// --- 4. PREPARE EDIT DATA ---
-$edit_mode = false;
-$edit_data = ['item_name' => '', 'item_code' => '', 'category' => '', 'supplier_id' => '', 'item_id' => ''];
-
-if (isset($_GET['edit_id'])) {
-    $edit_mode = true;
-    $id = $_GET['edit_id'];
-    $res = mysqli_query($conn, "SELECT * FROM items WHERE item_id='$id'");
-    $edit_data = mysqli_fetch_assoc($res);
-}
-
-// --- 5. FETCH LIST & SUPPLIERS ---
-$items_res = mysqli_query($conn, "SELECT i.*, COALESCE(SUM(s.quantity), 0) as total_qty FROM items i LEFT JOIN stock s ON i.item_id = s.item_id GROUP BY i.item_id ORDER BY i.item_id DESC");
+// 4. FETCH DATA
+$items_res = mysqli_query($conn, "SELECT i.*, sp.supplier_name FROM items i LEFT JOIN suppliers sp ON i.supplier_id = sp.supplier_id ORDER BY i.item_id DESC");
 $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers");
 ?>
 
@@ -82,209 +67,130 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers");
 
 <head>
     <meta charset="UTF-8">
-    <title>TrackFlow – Items Inventory</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <style>
-        /* BUTTON STYLES */
-        .btn-action {
-            padding: 5px 10px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: bold;
-            margin-right: 5px;
-            display: inline-block;
-        }
-
-        .btn-edit {
-            background: rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
-            border: 1px solid #fbbf24;
-        }
-
-        .btn-edit:hover {
-            background: #fbbf24;
-            color: black;
-        }
-
-        .btn-delete {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid #ef4444;
-        }
-
-        .btn-delete:hover {
-            background: #ef4444;
-            color: white;
-        }
-
-        /* MODAL STYLES */
-        .modal-overlay {
-            display: none;
-            /* Hidden by default */
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-box {
-            background: #1e293b;
-            padding: 30px;
-            border-radius: 15px;
-            width: 400px;
-            border: 1px solid #334155;
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            border: none;
-            background: #ffffff;
-            color: black;
-            /* High Visibility */
-        }
-    </style>
+    <title>TrackFlow – Product Catalog</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css?v=3">
 </head>
 
-<body class="admin-dash-page">
+<body class="trackflow-body">
 
-    <div class="header">TrackFlow – Items Inventory</div>
-
-    <div class="layout">
-        <?php include 'menu.php'; ?>
-
-        <div class="main">
-            <div class="card">
-                <div class="top-bar">
-                    <div class="filters">
-                        <input type="text" id="searchInput" placeholder="Search inventory...">
-                    </div>
-                    <button class="add-btn" onclick="openModal()">+ Add Item</button>
-                </div>
-
-                <table id="invTable">
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Qty</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        if (mysqli_num_rows($items_res) > 0) {
-                            while ($row = mysqli_fetch_assoc($items_res)) {
-                                $qty = $row['total_qty'];
-                                $status = ($qty == 0) ? "Out of Stock" : (($qty < 20) ? "Low Stock" : "In Stock");
-                                $color  = ($qty == 0) ? "#ef4444" : (($qty < 20) ? "#f59e0b" : "#22c55e");
-
-                                echo "<tr>";
-                                echo "<td style='opacity:0.7; font-family:monospace;'>" . $row['item_code'] . "</td>";
-                                echo "<td style='font-weight:bold; color:#c9d6ff;'>" . $row['item_name'] . "</td>";
-                                echo "<td>" . $row['category'] . "</td>";
-                                echo "<td>" . $qty . "</td>";
-                                echo "<td><span style='color:$color; font-weight:bold; font-size:12px;'>● $status</span></td>";
-
-                                echo "<td>";
-                                // EDIT BUTTON (Refreshes page with ?edit_id=X)
-                                echo "<a href='items-inventory.php?edit_id=" . $row['item_id'] . "' class='btn-action btn-edit'>✏️ Edit</a>";
-                                // DELETE BUTTON
-                                echo "<a href='items-inventory.php?delete_id=" . $row['item_id'] . "' class='btn-action btn-delete' onclick=\"return confirm('⚠️ Are you sure?');\">🗑 Delete</a>";
-                                echo "</td>";
-                                echo "</tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='6' style='text-align:center;'>No items found.</td></tr>";
-                        }
-                        ?>
-                    </tbody>
-                </table>
-            </div>
+    <aside class="tf-sidebar">
+        <div class="tf-logo">
+            <i class="bi bi-box-seam-fill"></i> TRACKFLOW
         </div>
-    </div>
+        <nav class="tf-nav">
+            <a href="dashboard.php"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="items-inventory.php"><i class="bi bi-box"></i> Items Inventory</a>
+            <a href="batch-expiry.php"><i class="bi bi-clock-history"></i> Batch & Expiry</a>
+            <a href="stock-location.php"><i class="bi bi-shop"></i> Stock by Location</a>
+            <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
+            <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
+            <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
 
-    <div id="ITEM_MODAL" class="modal-overlay">
-        <div class="modal-box" style="<?php echo $edit_mode ? 'border-color:#fbbf24;' : ''; ?>">
 
-            <h3 style="color:white; margin-top:0;">
-                <?php echo $edit_mode ? '✏️ Edit Item' : '+ Add New Item'; ?>
-            </h3>
+            <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
 
+            <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="tf-main">
+
+        <div class="tf-page-header">
+            <div class="tf-page-title">
+                <h2>Product Catalog</h2>
+                <p>Manage item details and RFID assignments</p>
+            </div>
+            <button onclick="openModal()" class="tf-btn-primary">
+                <i class="bi bi-plus-lg"></i> Register New Item
+            </button>
+        </div>
+
+        <div class="tf-table-container">
+            <table class="tf-table">
+                <thead>
+                    <tr>
+                        <th>Item Details</th>
+                        <th>Category</th>
+                        <th>RFID Tag</th>
+                        <th>Min Level</th>
+                        <th>Supplier</th>
+                        <th style="text-align:right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = mysqli_fetch_assoc($items_res)): ?>
+                        <tr>
+                            <td>
+                                <div class="item-meta">
+                                    <span class="item-name"><?php echo $row['item_name']; ?></span>
+                                    <span class="item-code"><?php echo $row['item_code']; ?></span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge-cat <?php echo $row['category']; ?>">
+                                    <?php echo $row['category']; ?>
+                                </span>
+                            </td>
+                            <td style="font-family:monospace; color:#6b7280;"><?php echo $row['rfid_tag_id']; ?></td>
+                            <td style="font-weight:700;"><?php echo $row['minimum_level']; ?></td>
+                            <td style="color:#6b7280;"><?php echo $row['supplier_name'] ?? 'Unknown'; ?></td>
+                            <td class="action-icons" style="text-align:right">
+                                <a href="#" title="Edit"><i class="bi bi-pencil-square"></i></a>
+                                <a href="#" title="View"><i class="bi bi-eye"></i></a>
+                                <a href="items-inventory.php?delete_id=<?php echo $row['item_id']; ?>" class="delete" title="Delete" onclick="return confirm('Delete item?')"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <div id="ADD_MODAL" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-top:0; margin-bottom:20px;">Register New Item</h3>
             <form method="POST">
-                <input type="hidden" name="item_id" value="<?php echo $edit_data['item_id']; ?>">
+                <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Item Name</label>
+                <input type="text" name="item_name" placeholder="e.g. Paracetamol" required>
 
-                <label style="color:#94a3b8; font-size:12px;">Item Name</label>
-                <input type="text" name="item_name" class="modal-input" placeholder="e.g. Gaming Mouse" required
-                    value="<?php echo $edit_data['item_name']; ?>">
+                <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Item Code</label>
+                <input type="text" name="item_code" placeholder="e.g. MED-001" required>
 
-                <label style="color:#94a3b8; font-size:12px;">Item Code</label>
-                <input type="text" name="item_code" class="modal-input" placeholder="e.g. GM-001" required
-                    value="<?php echo $edit_data['item_code']; ?>">
-
-                <label style="color:#94a3b8; font-size:12px;">Category</label>
-                <select name="category" class="modal-input">
-                    <option value="Electronics" <?php if ($edit_data['category'] == 'Electronics') echo 'selected'; ?>>Electronics</option>
-                    <option value="Groceries" <?php if ($edit_data['category'] == 'Groceries') echo 'selected'; ?>>Groceries</option>
-                    <option value="Stationery" <?php if ($edit_data['category'] == 'Stationery') echo 'selected'; ?>>Stationery</option>
-                    <option value="Beverages" <?php if ($edit_data['category'] == 'Beverages') echo 'selected'; ?>>Beverages</option>
-                    <option value="Snacks" <?php if ($edit_data['category'] == 'Snacks') echo 'selected'; ?>>Snacks</option>
+                <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Category</label>
+                <select name="category">
+                    <option value="Medicine">Medicine</option>
+                    <option value="Supplies">Supplies</option>
+                    <option value="Equipment">Equipment</option>
                 </select>
 
-                <label style="color:#94a3b8; font-size:12px;">Supplier</label>
-                <select name="supplier_id" class="modal-input">
+                <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Supplier</label>
+                <select name="supplier_id">
                     <?php
-                    // Reset pointer for the loop
                     mysqli_data_seek($sup_res, 0);
                     while ($s = mysqli_fetch_assoc($sup_res)) {
-                        $selected = ($edit_data['supplier_id'] == $s['supplier_id']) ? 'selected' : '';
-                        echo "<option value='" . $s['supplier_id'] . "' $selected>" . $s['supplier_name'] . "</option>";
+                        echo "<option value='" . $s['supplier_id'] . "'>" . $s['supplier_name'] . "</option>";
                     }
                     ?>
                 </select>
 
-                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                    <a href="items-inventory.php" style="padding:10px 20px; border-radius:5px; background:#475569; color:white; text-decoration:none;">Cancel</a>
-
-                    <?php if ($edit_mode): ?>
-                        <button type="submit" name="update_item_btn" style="background:#fbbf24; color:black; padding:10px 20px; border-radius:5px; border:none; font-weight:bold; cursor:pointer;">Update Item</button>
-                    <?php else: ?>
-                        <button type="submit" name="add_item_btn" style="background:#4f46e5; color:white; padding:10px 20px; border-radius:5px; border:none; font-weight:bold; cursor:pointer;">Save Item</button>
-                    <?php endif; ?>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" onclick="closeModal()" style="background:transparent; border:1px solid #e5e7eb; padding:10px 20px; border-radius:8px; cursor:pointer; color:#374151;">Cancel</button>
+                    <button type="submit" name="add_item_btn" class="tf-btn-primary">Save Item</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Open Modal Function
         function openModal() {
-            document.getElementById("ITEM_MODAL").style.display = "flex";
+            document.getElementById("ADD_MODAL").style.display = "flex";
         }
 
-        // Search Logic
-        document.getElementById("searchInput").addEventListener("keyup", function() {
-            let val = this.value.toLowerCase();
-            document.querySelectorAll("#invTable tbody tr").forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
-            });
-        });
-
-        // AUTO-OPEN MODAL IF EDITING
-        // PHP sets $edit_mode to true/false. We use that here.
-        <?php if ($edit_mode): ?>
-            openModal();
-        <?php endif; ?>
+        function closeModal() {
+            document.getElementById("ADD_MODAL").style.display = "none";
+        }
     </script>
 </body>
 

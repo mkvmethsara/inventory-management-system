@@ -1,89 +1,68 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // SECURITY GATE 🔒
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-    // If not logged in, or not an Admin, kick them out
     header("Location: ../index.php");
     exit();
 }
-?>
 
-<?php
-session_start();
 include '../config/db.php';
 
-// --- 1. HANDLE UPDATE STAFF (The 'U' in CRUD) ---
-if (isset($_POST['update_btn'])) {
-    $id     = $_POST['user_id'];
-    $u_name = $_POST['username'];
-    $u_role = $_POST['role'];
-    $u_pass = $_POST['password']; // This might be empty
+// --- 1. HANDLE ADD/UPDATE USER ---
+if (isset($_POST['save_user_btn'])) {
+    $id   = $_POST['user_id'];
+    $name = mysqli_real_escape_string($conn, $_POST['username']);
+    $role = $_POST['role'];
+    $pass = $_POST['password'];
 
-    // LOGIC: Did they type a new password?
-    if (!empty($u_pass)) {
-        // Yes -> Encrypt it and update everything
-        $hashed = password_hash($u_pass, PASSWORD_DEFAULT);
-        $sql = "UPDATE users SET username='$u_name', role='$u_role', password='$hashed' WHERE user_id='$id'";
+    // CHECK: Username conflict (only for new users)
+    if (empty($id)) {
+        $check = mysqli_query($conn, "SELECT * FROM users WHERE username='$name'");
+        if (mysqli_num_rows($check) > 0) {
+            echo "<script>alert('❌ Username already exists!'); window.location.href='staff.php';</script>";
+            exit();
+        }
+    }
+
+    if (!empty($id)) {
+        // UPDATE EXISTING
+        if (!empty($pass)) {
+            $hashed = password_hash($pass, PASSWORD_DEFAULT);
+            $sql = "UPDATE users SET username='$name', role='$role', password='$hashed' WHERE user_id='$id'";
+        } else {
+            $sql = "UPDATE users SET username='$name', role='$role' WHERE user_id='$id'";
+        }
+        $msg = "✅ Staff Member Updated!";
     } else {
-        // No -> Keep old password, update only Name & Role
-        $sql = "UPDATE users SET username='$u_name', role='$u_role' WHERE user_id='$id'";
+        // CREATE NEW
+        $hashed = password_hash($pass, PASSWORD_DEFAULT);
+        $sql = "INSERT INTO users (username, password, role) VALUES ('$name', '$hashed', '$role')";
+        $msg = "✅ New Staff Created!";
     }
 
     if (mysqli_query($conn, $sql)) {
-        echo "<script>alert('✅ User Updated Successfully!'); window.location.href='staff.php';</script>";
+        echo "<script>alert('$msg'); window.location.href='staff.php';</script>";
     } else {
-        echo "<script>alert('❌ Error: " . mysqli_error($conn) . "');</script>";
+        echo "<script>alert('Error: " . mysqli_error($conn) . "');</script>";
     }
 }
 
-// --- 2. HANDLE DELETE STAFF ---
+// --- 2. HANDLE DELETE ---
 if (isset($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
-
-    // Prevent deleting yourself
     if ($id == $_SESSION['user_id']) {
-        echo "<script>alert('⚠️ SECURITY WARNING: You cannot delete your own account while logged in!'); window.location.href='staff.php';</script>";
+        echo "<script>alert('⚠️ You cannot delete yourself!'); window.location.href='staff.php';</script>";
     } else {
         mysqli_query($conn, "DELETE FROM users WHERE user_id = '$id'");
-        echo "<script>alert('✅ User Removed!'); window.location.href='staff.php';</script>";
+        echo "<script>window.location.href='staff.php';</script>";
     }
 }
 
-// --- 3. HANDLE ADD STAFF ---
-if (isset($_POST['add_btn'])) {
-    $u_name = $_POST['username'];
-    $u_pass = $_POST['password'];
-    $u_role = $_POST['role'];
-
-    // Always encrypt new passwords
-    $hashed = password_hash($u_pass, PASSWORD_DEFAULT);
-
-    // Check if username taken
-    $check = mysqli_query($conn, "SELECT * FROM users WHERE username='$u_name'");
-    if (mysqli_num_rows($check) > 0) {
-        echo "<script>alert('❌ Username already exists!');</script>";
-    } else {
-        $sql = "INSERT INTO users (username, password, role) VALUES ('$u_name', '$hashed', '$u_role')";
-        if (mysqli_query($conn, $sql)) {
-            echo "<script>alert('✅ New Staff Added!'); window.location.href='staff.php';</script>";
-        }
-    }
-}
-
-// --- 4. PREPARE EDIT DATA ---
-$edit_mode = false;
-$edit_data = ['username' => '', 'role' => 'staff', 'user_id' => ''];
-
-if (isset($_GET['edit_id'])) {
-    $edit_mode = true;
-    $id = $_GET['edit_id'];
-    $res = mysqli_query($conn, "SELECT * FROM users WHERE user_id='$id'");
-    $edit_data = mysqli_fetch_assoc($res);
-}
-
-// --- 5. FETCH LIST ---
-$result = mysqli_query($conn, "SELECT * FROM users");
+// --- 3. FETCH USERS ---
+$result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
 ?>
 
 <!DOCTYPE html>
@@ -92,171 +71,217 @@ $result = mysqli_query($conn, "SELECT * FROM users");
 <head>
     <meta charset="UTF-8">
     <title>TrackFlow – Staff Management</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <style>
-        /* --- UI STYLES --- */
-        .form-box-fixed {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #334155;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .input-fixed {
-            background-color: #ffffff !important;
-            color: black !important;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 14px;
-            flex: 1;
-            border: 1px solid #cbd5e1;
-        }
-
-        .btn-fixed {
-            padding: 10px 25px;
-            border-radius: 5px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            white-space: nowrap;
-            width: auto !important;
-        }
-
-        /* Badge & Table Buttons */
-        .role-badge {
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .badge-admin {
-            background: rgba(34, 197, 94, 0.2);
-            color: #22c55e;
-            border: 1px solid #22c55e;
-        }
-
-        .badge-staff {
-            background: rgba(56, 189, 248, 0.2);
-            color: #38bdf8;
-            border: 1px solid #38bdf8;
-        }
-
-        .btn-edit {
-            background: rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
-            border: 1px solid #fbbf24;
-            padding: 5px 10px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-
-        .btn-delete {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid #ef4444;
-            padding: 5px 10px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: bold;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css?v=17">
 </head>
 
-<body class="admin-dash-page">
+<body class="trackflow-body">
 
-    <div class="header">TrackFlow – Staff & Access Control</div>
+    <aside class="tf-sidebar">
+        <div class="tf-logo">
+            <i class="bi bi-box-seam-fill"></i> TRACKFLOW
+        </div>
+        <nav class="tf-nav">
+            <a href="dashboard.php"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="items-inventory.php"><i class="bi bi-box"></i> Items Inventory</a>
+            <a href="batch-expiry.php"><i class="bi bi-clock-history"></i> Batch & Expiry</a>
+            <a href="stock-location.php"><i class="bi bi-shop"></i> Stock by Location</a>
+            <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
+            <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
+            <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
 
-    <div class="layout">
-        <?php include 'menu.php'; ?>
 
-        <div class="main">
+            <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
 
-            <div class="form-box-fixed" style="<?php echo $edit_mode ? 'border-color:#fbbf24;' : ''; ?>">
+            <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </aside>
 
-                <h4 style="margin:0; color:<?php echo $edit_mode ? '#fbbf24' : '#c9d6ff'; ?>; width:100px; flex-shrink:0;">
-                    <?php echo $edit_mode ? '✏️ Edit:' : '+ New User:'; ?>
-                </h4>
+    <main class="tf-main">
 
-                <form method="POST" style="display:flex; gap:10px; width:100%; align-items:center;">
-                    <input type="hidden" name="user_id" value="<?php echo $edit_data['user_id']; ?>">
-
-                    <input type="text" name="username" class="input-fixed" placeholder="Username" required
-                        value="<?php echo $edit_data['username']; ?>">
-
-                    <input type="text" name="password" class="input-fixed"
-                        placeholder="<?php echo $edit_mode ? '(Leave blank to keep current)' : 'Password'; ?>"
-                        <?php echo $edit_mode ? '' : 'required'; ?>>
-
-                    <select name="role" class="input-fixed" style="cursor:pointer;">
-                        <option value="staff" <?php if ($edit_data['role'] == 'staff') echo 'selected'; ?>>Staff</option>
-                        <option value="admin" <?php if ($edit_data['role'] == 'admin') echo 'selected'; ?>>Admin</option>
-                    </select>
-
-                    <?php if ($edit_mode): ?>
-                        <button type="submit" name="update_btn" class="btn-fixed" style="background:#fbbf24; color:black;">Update User</button>
-                        <a href="staff.php" class="btn-fixed" style="background:#475569; text-decoration:none; display:inline-block; text-align:center;">Cancel</a>
-                    <?php else: ?>
-                        <button type="submit" name="add_btn" class="btn-fixed" style="background:#4f46e5;">Create User</button>
-                    <?php endif; ?>
-                </form>
+        <div class="tf-page-header">
+            <div class="tf-page-title">
+                <h2>Staff Management</h2>
+                <p>Manage system users and access roles</p>
             </div>
 
-            <div class="card">
-                <h3 style="margin-top:0;">Authorized Users</h3>
-                <table id="staffTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th>Role</th>
-                            <th>Password Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        if (mysqli_num_rows($result) > 0) {
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $role_badge = ($row['role'] == 'admin') ? 'badge-admin' : 'badge-staff';
+            <button onclick="openModal()" class="tf-btn-primary" style="background:#111827;">
+                <i class="bi bi-person-plus-fill"></i> Add New Staff
+            </button>
+        </div>
 
-                                echo "<tr>";
-                                echo "<td style='opacity:0.5;'>#" . $row['user_id'] . "</td>";
-                                echo "<td style='font-weight:bold; color:#c9d6ff;'>" . $row['username'] . "</td>";
-                                echo "<td><span class='role-badge $role_badge'>" . strtoupper($row['role']) . "</span></td>";
-                                echo "<td style='color:#94a3b8; font-size:11px; font-family:monospace;'>🔒 Encrypted</td>";
+        <div class="tf-table-container">
+            <div style="padding: 20px; border-bottom: 1px solid #f3f4f6;">
+                <input type="text" id="searchInput" placeholder="Search staff..."
+                    style="padding: 10px 15px; width: 300px; border: 1px solid #e5e7eb; border-radius: 8px; background:#f9fafb; outline:none;">
+            </div>
 
-                                echo "<td>";
-                                // Don't allow editing/deleting yourself to prevent lockouts
-                                if ($row['user_id'] == $_SESSION['user_id']) {
-                                    echo "<span style='color:#64748b; font-size:12px;'>(Current User)</span>";
-                                } else {
-                                    echo "<a href='staff.php?edit_id=" . $row['user_id'] . "' class='btn-edit'>✏️ Edit</a>";
-                                    echo "<a href='staff.php?delete_id=" . $row['user_id'] . "' class='btn-delete' onclick=\"return confirm('⚠️ Are you sure?');\">🗑 Delete</a>";
-                                }
-                                echo "</td>";
-                                echo "</tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='5' style='text-align:center;'>No users found.</td></tr>";
+            <table class="tf-table" id="userTable">
+                <thead>
+                    <tr>
+                        <th style="padding-left:30px;">Username</th>
+                        <th>Role</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    if (mysqli_num_rows($result) > 0) {
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            // Data Preparation
+                            $id = $row['user_id'];
+                            $name = htmlspecialchars($row['username']);
+                            $role = ucfirst($row['role']);
+
+                            // Visual Logic
+                            $avatar_letter = strtoupper(substr($name, 0, 1));
+                            $role_class = ($row['role'] == 'admin') ? 'badge-role-admin' : 'badge-role-staff';
+                            $status_badge = "<span class='status-active'>Active</span>";
+
+                            // Fake Date for Demo
+                            $date = "Feb 17, 2026";
+
+                            echo "<tr>";
+
+                            // 1. Username with Avatar
+                            echo "<td style='padding-left:30px;'>
+                                    <div class='user-profile'>
+                                        <div class='user-avatar'>$avatar_letter</div>
+                                        <span class='user-name'>$name</span>
+                                    </div>
+                                  </td>";
+
+                            // 2. Role Badge
+                            echo "<td><span class='$role_class'>$role</span></td>";
+
+                            // 3. Date
+                            echo "<td style='color:#6b7280; font-size:14px;'>$date</td>";
+
+                            // 4. Status
+                            echo "<td>$status_badge</td>";
+
+                            // 5. Actions
+                            echo "<td style='text-align:right;'>
+                                    <button class='btn-text edit-btn' onclick='editUser(\"$id\", \"$name\", \"$role\")'>
+                                        <i class='bi bi-pencil-square'></i> Edit
+                                    </button>
+                                    
+                                    <button class='btn-text reset-btn' onclick='resetPass(\"$id\", \"$name\", \"$role\")'>
+                                        <i class='bi bi-key'></i> Reset Password
+                                    </button>
+
+                                    <a href='staff.php?delete_id=$id' class='btn-text delete-btn' onclick=\"return confirm('Delete this user?');\">
+                                        <i class='bi bi-trash'></i> Delete
+                                    </a>
+                                  </td>";
+                            echo "</tr>";
                         }
-                        ?>
-                    </tbody>
-                </table>
-            </div>
+                    } else {
+                        echo "<tr><td colspan='5' style='text-align:center; padding:50px; color:#9ca3af;'>No staff found.</td></tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <div id="USER_MODAL" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="modalTitle" style="margin-top:0; margin-bottom:20px;">Add New Staff</h3>
+
+            <form method="POST">
+                <input type="hidden" name="user_id" id="user_id_input">
+
+                <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Username</label>
+                <input type="text" name="username" id="username_input" placeholder="e.g. john.doe" required>
+
+                <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Role</label>
+                <select name="role" id="role_input">
+                    <option value="staff">Warehouse Staff</option>
+                    <option value="admin">Admin</option>
+                </select>
+
+                <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;" id="passLabel">Password</label>
+                <input type="text" name="password" id="password_input" placeholder="Enter password" required>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                    <button type="button" onclick="closeModal()" class="btn-cancel" style="background:transparent; border:1px solid #e5e7eb; color:#374151;">Cancel</button>
+                    <button type="submit" name="save_user_btn" class="tf-btn-primary">Save Staff</button>
+                </div>
+            </form>
         </div>
     </div>
 
+    <script>
+        const modal = document.getElementById("USER_MODAL");
+        const title = document.getElementById("modalTitle");
+        const idInput = document.getElementById("user_id_input");
+        const nameInput = document.getElementById("username_input");
+        const roleInput = document.getElementById("role_input");
+        const passInput = document.getElementById("password_input");
+        const passLabel = document.getElementById("passLabel");
+
+        function openModal() {
+            // Reset for "Add New"
+            title.innerText = "Add New Staff";
+            idInput.value = "";
+            nameInput.value = "";
+            passInput.value = "";
+            passInput.placeholder = "Enter password";
+            passInput.required = true;
+            modal.style.display = "flex";
+        }
+
+        function editUser(id, name, role) {
+            // Fill for "Edit Details"
+            title.innerText = "Edit Staff Details";
+            idInput.value = id;
+            nameInput.value = name;
+            roleInput.value = role.toLowerCase();
+
+            // Hide Password for simple edit
+            passLabel.innerText = "New Password (Optional)";
+            passInput.placeholder = "Leave blank to keep current";
+            passInput.required = false;
+            passInput.value = "";
+
+            modal.style.display = "flex";
+        }
+
+        function resetPass(id, name, role) {
+            // Specific mode for Password Reset
+            title.innerText = "Reset Password for " + name;
+            idInput.value = id;
+            nameInput.value = name;
+            roleInput.value = role.toLowerCase();
+
+            passLabel.innerText = "New Password";
+            passInput.placeholder = "Enter new password";
+            passInput.required = true;
+            passInput.value = "";
+            passInput.focus();
+
+            modal.style.display = "flex";
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(e) {
+            if (e.target == modal) closeModal();
+        }
+
+        // Search Logic
+        document.getElementById("searchInput").addEventListener("keyup", function() {
+            let val = this.value.toLowerCase();
+            document.querySelectorAll("#userTable tbody tr").forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+            });
+        });
+    </script>
 </body>
 
 </html>

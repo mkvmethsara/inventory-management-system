@@ -1,151 +1,149 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // SECURITY GATE 🔒
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-    // If not logged in, or not an Admin, kick them out
     header("Location: ../index.php");
     exit();
 }
-?>
 
-<?php
 include '../config/db.php';
 
-// 1. Get all Locations for the Dropdown Filter
-$loc_sql = "SELECT * FROM locations ORDER BY location_code ASC";
-$loc_result = mysqli_query($conn, $loc_sql);
+// --- FILTER LOGIC (PHP) ---
+$filter_loc = isset($_GET['loc']) ? $_GET['loc'] : 'all';
+$where_clause = "";
 
-// 2. Get Stock Data (Joining Items, Locations, and Batches)
-// We join 4 tables here: Stock -> Items -> Locations -> Batches
+if ($filter_loc !== 'all') {
+    $safe_loc = mysqli_real_escape_string($conn, $filter_loc);
+    $where_clause = "WHERE l.location_code = '$safe_loc'";
+}
+
+// --- FETCH STOCK DATA ---
 $sql = "SELECT 
             s.quantity, 
-            i.item_name, 
-            i.item_code, 
             l.location_code, 
+            i.item_name, 
             b.batch_id
         FROM stock s
-        JOIN items i ON s.item_id = i.item_id
         JOIN locations l ON s.location_id = l.location_id
+        JOIN items i ON s.item_id = i.item_id
         LEFT JOIN item_batches b ON s.batch_id = b.batch_id
-        ORDER BY i.item_name ASC";
+        $where_clause
+        ORDER BY l.location_code ASC";
 
 $result = mysqli_query($conn, $sql);
+
+// --- FETCH LOCATIONS FOR BUTTONS ---
+$loc_sql = "SELECT DISTINCT location_code FROM locations ORDER BY location_code ASC";
+$loc_res = mysqli_query($conn, $loc_sql);
 ?>
 
 <!DOCTYPE html>
-<html lang="en" class="admin-dash-page">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>Stock by Location</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>TrackFlow – Stock by Location</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css?v=12">
 </head>
 
-<body>
+<body class="trackflow-body">
 
-    <div class="header">TrackFlow – Stock by Location</div>
+    <aside class="tf-sidebar">
+        <div class="tf-logo">
+            <i class="bi bi-box-seam-fill"></i> TRACKFLOW
+        </div>
+        <nav class="tf-nav">
+            <a href="dashboard.php"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="items-inventory.php"><i class="bi bi-box"></i> Items Inventory</a>
+            <a href="batch-expiry.php"><i class="bi bi-clock-history"></i> Batch & Expiry</a>
+            <a href="stock-location.php"><i class="bi bi-shop"></i> Stock by Location</a>
+            <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
+            <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
+            <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
 
-    <div class="layout">
-        <?php include 'menu.php'; ?>
 
-        <div class="main">
-            <div class="card">
+            <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
 
-                <div class="top-bar">
-                    <div class="filters">
-                        <input type="text" id="searchInput" placeholder="Search item..." style="width: 250px;">
+            <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </aside>
 
-                        <select id="locationFilter">
-                            <option value="all">All Locations</option>
-                            <?php
-                            if (mysqli_num_rows($loc_result) > 0) {
-                                while ($loc = mysqli_fetch_assoc($loc_result)) {
-                                    echo "<option value='" . strtolower($loc['location_code']) . "'>" . $loc['location_code'] . "</option>";
-                                }
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
+    <main class="tf-main">
 
-                <table id="stockTable">
-                    <thead>
-                        <tr>
-                            <th>Item ID</th>
-                            <th>Item Name</th>
-                            <th>Location</th>
-                            <th>Batch No</th>
-                            <th>Available Qty</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        if (mysqli_num_rows($result) > 0) {
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $qty = $row['quantity'];
+        <div class="tf-page-header">
+            <div class="tf-page-title">
+                <h2>Stock</h2>
+                <h2 style="font-size:24px; margin-top:5px;">Real-time Stock by Location</h2>
+            </div>
 
-                                // Determine Badge Color based on Quantity
-                                $badge_class = "qty-high";
-                                if ($qty == 0) {
-                                    $badge_class = "qty-zero";
-                                } elseif ($qty < 20) {
-                                    $badge_class = "qty-low";
-                                }
+            <div class="tf-loc-filter-group">
+                <a href="stock-location.php?loc=all" class="tf-loc-btn <?php echo ($filter_loc == 'all') ? 'active' : ''; ?>">All</a>
 
-                                // Format Batch Display
-                                $batch_display = $row['batch_id'] ? "BCH-" . str_pad($row['batch_id'], 3, '0', STR_PAD_LEFT) : "N/A";
-
-                                echo "<tr>";
-                                echo "<td style='opacity:0.7; font-family:monospace;'>" . $row['item_code'] . "</td>";
-                                echo "<td style='font-weight:bold; color:#c9d6ff;'>" . $row['item_name'] . "</td>";
-                                echo "<td class='loc-cell'>" . $row['location_code'] . "</td>";
-                                echo "<td style='color:#a5b4fc;'>" . $batch_display . "</td>";
-                                echo "<td><span class='qty-badge $badge_class'>" . $qty . "</span></td>";
-                                echo "</tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='5' style='text-align:center; padding:30px; opacity:0.5;'>No stock records found.</td></tr>";
-                        }
-                        ?>
-                    </tbody>
-                </table>
-
+                <?php while ($l = mysqli_fetch_assoc($loc_res)): ?>
+                    <a href="stock-location.php?loc=<?php echo $l['location_code']; ?>"
+                        class="tf-loc-btn <?php echo ($filter_loc == $l['location_code']) ? 'active' : ''; ?>">
+                        <?php echo $l['location_code']; ?>
+                    </a>
+                <?php endwhile; ?>
             </div>
         </div>
-    </div>
 
-    <script>
-        const searchInput = document.getElementById("searchInput");
-        const locationFilter = document.getElementById("locationFilter");
-        const table = document.getElementById("stockTable");
+        <div class="tf-table-container">
+            <table class="tf-table">
+                <thead>
+                    <tr>
+                        <th style="padding-left:30px;">LOCATION</th>
+                        <th>ITEM</th>
+                        <th>BATCH</th>
+                        <th>IN-STOCK QTY</th>
+                        <th>CONDITION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    if (mysqli_num_rows($result) > 0) {
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            // Format Batch Display
+                            $batch_display = $row['batch_id'] ? "B" . $row['batch_id'] : "N/A";
 
-        function filterTable() {
-            const searchText = searchInput.value.toLowerCase();
-            const locationVal = locationFilter.value.toLowerCase();
-            const rows = table.querySelectorAll("tbody tr");
+                            echo "<tr>";
+                            // Location Column
+                            echo "<td style='padding-left:30px;'>
+                                    <span class='loc-badge'>
+                                        <i class='bi bi-geo-alt-fill'></i> " . $row['location_code'] . "
+                                    </span>
+                                  </td>";
 
-            rows.forEach(row => {
-                const rowText = row.innerText.toLowerCase();
-                // The location is in the 3rd column (index 2)
-                const rowLocation = row.querySelector(".loc-cell").innerText.toLowerCase();
+                            // Item Name
+                            echo "<td style='font-weight:600; color:#1f2937;'>" . $row['item_name'] . "</td>";
 
-                const matchesSearch = rowText.includes(searchText);
-                const matchesLocation = locationVal === "all" || rowLocation.includes(locationVal);
+                            // Batch ID
+                            echo "<td style='color:#9ca3af; font-size:13px; font-weight:500;'>" . $batch_display . "</td>";
 
-                if (matchesSearch && matchesLocation) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
+                            // Quantity
+                            echo "<td style='font-weight:800; font-size:16px; color:#111827;'>" . number_format($row['quantity']) . "</td>";
 
-        searchInput.addEventListener("keyup", filterTable);
-        locationFilter.addEventListener("change", filterTable);
-    </script>
+                            // Condition
+                            echo "<td>
+                                    <span class='condition-badge'>
+                                        <span class='dot green'></span> Optimal Storage
+                                    </span>
+                                  </td>";
+                            echo "</tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='5' style='text-align:center; padding:50px; color:#9ca3af;'>No stock found for this location.</td></tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+        </div>
 
+    </main>
 </body>
 
 </html>

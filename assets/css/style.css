@@ -1,86 +1,150 @@
+/* =========================================
+   COOLER THEME (Mix & Match Style)
+   ========================================= */
 
-*{
-    box-sizing:border-box;
-    font-family: "Segoe UI", sans-serif;
+/* 1. Global Reset */
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-body{
-    margin:0;
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#2f2c83; 
+/* 2. Dark Body Background */
+body.login-page {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0b1120; /* Deep Dark Navy */
 }
 
-
-.login-card{
-    width:420px;
-    background:#ffffff;
-    border-radius:26px;
-    padding:48px 38px;
-    box-shadow:0 18px 40px rgba(0,0,0,0.2);
-    text-align:center;
+/* 3. The Rounded White Card */
+.login-card {
+    width: 100%;
+    max-width: 380px;
+    background-color: #ffffff; /* Pure White */
+    border-radius: 35px; /* Super Rounded Corners */
+    padding: 45px 35px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); /* Deep Soft Shadow */
 }
 
-
-.logo{
-    width:56px;
-    height:56px;
-    background:#4f46e5;
-    border-radius:16px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin:0 auto 18px auto;
+/* 4. Logo Icon (Glowing Box) */
+.logo-box {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6); /* Purple Gradient */
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 30px auto;
+    font-size: 32px;
+    color: white;
+    box-shadow: 0 15px 35px rgba(99, 102, 241, 0.3); /* Purple Glow */
 }
 
-.logo svg{
-    width:28px;
-    height:28px;
-    stroke:white;
+/* 5. Text Styling */
+.login-card h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 5px 0;
 }
 
-
-h1{
-    margin:0;
-    font-size:28px;
-    color:#111827;
+.subtitle {
+    margin-bottom: 35px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
 }
 
-.subtitle{
-    margin-top:6px;
-    margin-bottom:28px;
-    color:#6b7280;
+/* 6. FORM INPUTS (The Cool Mix) */
+.login-card label {
+    display: block;
+    margin-bottom: 8px;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    margin-left: 5px;
 }
 
-
-.form-group{
-    text-align:left;
-    margin-bottom:18px;
+/* Username - Light & Soft */
+input[name="username"] {
+    width: 100%;
+    padding: 16px;
+    background-color: #f8fafc; /* Very Light Grey */
+    border: 2px solid #f1f5f9;
+    border-radius: 16px;
+    color: #334155;
+    font-size: 15px;
+    outline: none;
+    transition: 0.3s;
+    margin-bottom: 20px;
 }
 
-label{
-    display:block;
-    margin-bottom:6px;
-    font-weight:600;
-    color:#1f2933;
+input[name="username"]:focus {
+    background-color: white;
+    border-color: #6366f1;
 }
 
-
-input{
-    width:100%;
-    padding:14px 16px;
-    border-radius:14px;
-    border:1px solid #e5e7eb;
-    outline:none;
-    font-size:15px;
-    background:#f9fafb;
+/* Password - Dark & Contrast (Just like your image!) */
+input[name="password"] {
+    width: 100%;
+    padding: 16px;
+    background-color: #1e293b; /* Dark Navy Background */
+    border: 2px solid #1e293b;
+    border-radius: 16px;
+    color: white;
+    font-size: 15px;
+    outline: none;
+    transition: 0.3s;
+    letter-spacing: 2px; /* Makes dots look cooler */
 }
 
-input:focus{
-    border-color:#4f46e5;
-    background:white;
+input[name="password"]::placeholder {
+    color: #475569;
+    letter-spacing: normal;
+}
+
+input[name="password"]:focus {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+    border-color: #6366f1;
+}
+
+/* 7. Login Button (Glowing Gradient) */
+.login-card button {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(to right, #6366f1, #4f46e5);
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 30px;
+    transition: 0.3s;
+    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3); /* Button Glow */
+}
+
+.login-card button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(79, 70, 229, 0.5);
+}
+
+/* 8. Bottom Link */
+.staff-link {
+    display: block;
+    margin-top: 30px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.staff-link:hover {
+    color: #4f46e5;
 }
 
 
@@ -318,1061 +382,865 @@ body.staff-dash-page {
 }
 
 /* =========================================
-   INVENTORY & TABLE STYLES (From Vishwa)
+   TRACKFLOW THEME (Light Mode) - Starts Line 169
    ========================================= */
 
-/* Top Bar & Search */
-.top-bar {
+/* 1. Main Layout */
+body.trackflow-body {
+    display: flex;
+    background-color: #f8f9fa; /* Clean Light Background */
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    color: #1f2937;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* 2. Sidebar */
+.tf-sidebar {
+    width: 260px;
+    background: white;
+    height: 100vh;
+    padding: 25px 20px;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+}
+
+.tf-logo {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 45px;
+    padding-left: 10px;
+}
+.tf-logo i { color: #4f46e5; font-size: 26px; }
+
+.tf-nav a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    color: #6b7280;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 12px;
+    margin-bottom: 6px;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.tf-nav a:hover, .tf-nav a.active {
+    background-color: #4f46e5;
+    color: white;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.nav-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    margin: 25px 0 10px 18px;
+    letter-spacing: 0.8px;
+}
+
+.tf-logout { margin-top: auto; color: #ef4444 !important; }
+.tf-logout:hover { background: #fee2e2 !important; color: #dc2626 !important; box-shadow: none !important; }
+
+/* 3. Main Content */
+.tf-main {
+    flex: 1;
+    padding: 30px 40px;
+    overflow-y: auto;
+}
+
+/* Header */
+.tf-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+}
+
+.tf-page-title h2 { margin: 0; font-size: 26px; font-weight: 800; color: #111827; }
+.tf-page-title p { margin: 5px 0 0; color: #6b7280; font-size: 14px; }
+
+/* Buttons */
+.tf-btn-primary {
+    background: #4f46e5;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+    transition: 0.2s;
+}
+.tf-btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
+
+/* 4. The Product Catalog Table */
+.tf-table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+    border: 1px solid #f3f4f6;
+    overflow: hidden;
+}
+
+.tf-table { width: 100%; border-collapse: collapse; }
+
+.tf-table th {
+    background: #f9fafb;
+    padding: 18px 24px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 800;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tf-table td {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.tf-table tr:hover { background-color: #f8fafc; }
+.tf-table tr:last-child td { border-bottom: none; }
+
+/* Table Columns */
+.item-meta { display: flex; flex-direction: column; }
+.item-name { font-weight: 700; color: #111827; font-size: 15px; }
+.item-code { font-size: 12px; color: #9ca3af; font-family: monospace; margin-top: 4px; }
+
+/* Badges */
+.badge-cat { padding: 6px 12px; border-radius: 30px; font-size: 12px; font-weight: 700; }
+.badge-cat.Medicine { background: #e0e7ff; color: #4338ca; }
+.badge-cat.Supplies { background: #f3e8ff; color: #7e22ce; }
+.badge-cat.Equipment { background: #dcfce7; color: #15803d; }
+
+/* Actions */
+.action-icons a {
+    color: #9ca3af;
+    font-size: 16px;
+    margin-left: 12px;
+    transition: 0.2s;
+    display: inline-block;
+}
+.action-icons a:hover { color: #4f46e5; transform: scale(1.1); }
+.action-icons a.delete:hover { color: #ef4444; }
+
+/* Modal Styles */
+.modal-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center; justify-content: center;
+}
+
+.modal-box {
+    background: white;
+    padding: 35px;
+    border-radius: 20px;
+    width: 450px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    animation: slideUp 0.3s ease-out;
+}
+@keyframes slideUp { from {transform: translateY(20px); opacity:0;} to {transform: translateY(0); opacity:1;} }
+
+.modal-box input, .modal-box select {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    outline: none;
+    background: #f9fafb;
+    font-size: 14px;
+}
+.modal-box input:focus { border-color: #4f46e5; background: white; }
+
+/* =========================================
+   EMERGENCY FIX: REMOVE DARK ZEBRA STRIPES
+   ========================================= */
+
+/* 1. Force all table rows to be Light */
+.tf-table tr:nth-child(even),
+.tf-table tr:nth-child(odd) {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+/* 2. Add a gentle Light Grey for even rows (Optional, looks nice) */
+.tf-table tr:nth-child(even) {
+    background-color: #f9fafb !important; /* Very pale grey */
+}
+
+/* 3. Fix the Hover Effect */
+.tf-table tr:hover {
+    background-color: #f3f4f6 !important; /* Slightly darker grey on hover */
+    color: #111827 !important;
+}
+
+/* 4. Ensure text inside cells is always dark */
+.tf-table td {
+    color: #1f2937 !important;
+}
+
+/*Batch-ex*/
+/* =========================================
+   BATCH & EXPIRY CARDS (Modern UI)
+   ========================================= */
+
+/* Top Bar Controls */
+.tf-controls-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 18px;
+    margin-bottom: 25px;
+    background: transparent;
 }
 
-.search input {
-    padding: 10px 14px;
+.tf-filter-btn {
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 10px 20px;
     border-radius: 8px;
-    border: none;
-    outline: none;
-    width: 220px;
-}
-
-/* Add Button */
-.add-btn {
-    background: #4f46e5;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 10px;
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-block;
-    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tf-filter-btn:hover { background: #f9fafb; border-color: #d1d5db; }
+
+/* The Batch Card Container */
+.tf-batch-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.add-btn:hover {
-    background: #4338ca;
+.tf-batch-card:hover {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border-color: #d1d5db;
+    transform: translateY(-2px);
 }
 
-/* Generic Table Styles */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+/* Left Side: Icon + Info */
+.batch-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
-th, td {
-    padding: 12px 10px;
-    text-align: left;
-    border-bottom: 1px solid #1f2937;
-}
-
-th {
-    background: #1d2c5c;
-    color: #c9d6ff;
-}
-
-tr:nth-child(even) {
-    background: #14204a; /* Zebra striping */
-}
-
-tr:hover {
-    background: #1e293b; /* Hover effect */
-}
-
-/* Status Badges */
-.status {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.in { background: #1f7a3f; color: white; } /* Green */
-.low { background: #b45309; color: white; } /* Orange */
-.out { background: #9f1239; color: white; } /* Red */
-
-/* =========================================
-   1. GLOBAL RESET & LOGIN STYLES
-   ========================================= */
-* {
-    box-sizing: border-box;
-    font-family: "Segoe UI", system-ui, sans-serif;
-}
-
-/* Default Body (Used for Login Page) */
-body {
-    margin: 0;
-    min-height: 100vh;
+.batch-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #0b1326; /* Deep dark blue background */
-    color: white;
+    font-size: 24px;
 }
+.batch-icon.purple { background: #e0e7ff; color: #4f46e5; }
+.batch-icon.orange { background: #ffedd5; color: #ea580c; }
+.batch-icon.blue   { background: #dbeafe; color: #2563eb; }
 
-/* Login Card Container */
-.login-card {
-    width: 420px;
-    background: #ffffff;
-    border-radius: 26px;
-    padding: 48px 38px;
-    box-shadow: 0 18px 40px rgba(0,0,0,0.2);
-    text-align: center;
-    color: #111827; /* Dark text for inside the white card */
-}
-
-.login-card h1 {
-    margin: 0;
-    font-size: 28px;
-    color: #111827;
-}
-
-.subtitle {
-    margin-top: 6px;
-    margin-bottom: 28px;
-    color: #6b7280;
-}
-
-/* Login Form Elements */
-.form-group {
-    text-align: left;
-    margin-bottom: 18px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    color: #1f2933;
-}
-
-/* Global Input Style (Default) */
-input, select {
-    width: 100%;
-    padding: 14px 16px;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    outline: none;
-    font-size: 15px;
-    background: #f9fafb;
-    color: #111827;
-}
-
-input:focus, select:focus {
-    border-color: #4f46e5;
-    background: white;
-}
-
-/* Global Button Style (Full Width for Login) */
-button {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 16px;
-    background: #4f46e5;
-    color: white;
+.batch-info h4 {
+    margin: 0 0 6px 0;
     font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 10px;
-    box-shadow: 0 10px 20px rgba(79,70,229,0.3);
-    transition: 0.2s;
-}
-
-button:hover {
-    background: #4338ca;
-}
-
-/* =========================================
-   2. ADMIN DASHBOARD LAYOUT
-   ========================================= */
-
-/* Override Body for Admin Pages */
-.admin-dash-page body {
-    display: block !important; /* Stop centering */
-    width: 100%;
-    height: 100%;
-    background: #0b1326;
-    color: white;
-    text-align: left;
-}
-
-/* Top Header */
-.admin-dash-page .header {
-    height: 64px;
-    background: #111c3a;
-    display: flex;
-    align-items: center;
-    padding: 0 22px;
     font-weight: 700;
-    font-size: 18px;
-    border-bottom: 1px solid #1f2937;
+    color: #111827;
 }
 
-/* Main Layout (Sidebar + Content) */
-.admin-dash-page .layout {
-    display: flex;
-    min-height: calc(100vh - 64px);
-}
-
-/* Sidebar */
-.admin-dash-page .sidebar {
-    width: 240px;
-    background: #0f1a33;
-    padding: 18px 12px;
-    flex-shrink: 0;
-    border-right: 1px solid #1f2937;
-}
-
-.admin-dash-page .sidebar a {
-    display: block;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    border-radius: 10px;
-    color: #c9d6ff;
-    text-decoration: none;
-    font-weight: 600;
-    transition: 0.2s;
-}
-
-.admin-dash-page .sidebar a:hover {
-    background: #4f46e5;
-    color: white;
-}
-
-/* Main Content Area */
-.admin-dash-page .main {
-    flex: 1;
-    padding: 24px;
-}
-
-/* Cards (Containers) */
-.admin-dash-page .card {
-    background: #16234a; /* Dark Blue Card */
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 18px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-/* =========================================
-   3. TABLES & INVENTORY STYLES
-   ========================================= */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-th, td {
-    padding: 14px 12px;
-    text-align: left;
-    border-bottom: 1px solid #2d3748;
-}
-
-th {
-    background: #1d2c5c;
-    color: #c9d6ff;
+.batch-meta {
+    font-size: 12px;
+    color: #9ca3af;
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+.batch-meta span { margin-right: 10px; }
+
+/* Right Side: Stats */
+.batch-right {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    text-align: right;
+}
+
+.stat-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    margin-bottom: 4px;
     letter-spacing: 0.5px;
 }
 
-tr:nth-child(even) {
-    background: #14204a; /* Zebra Striping */
+.stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1f2937;
 }
 
-tr:hover {
-    background: #1e293b;
-}
+/* Expiry Warning Colors */
+.expiry-warning { color: #ea580c; }
+.expiry-danger { color: #dc2626; }
 
-/* =========================================
-   4. VISHWA'S DESIGN SPECIFICS (FIXES)
-   ========================================= */
-
-/* Top Bar Container */
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-}
-
-/* Filter Section (Search + Dropdown) */
-.filters {
-    display: flex;
-    gap: 12px;
-}
-
-/* Fix: White Inputs for Admin Search */
-.filters input, .filters select {
-    width: auto;
-    min-width: 250px; /* Make search bar wider */
-    padding: 10px 16px;
-    background: #ffffff; 
-    color: #1e293b;
-    border: none;
-    border-radius: 8px;
-    height: 42px; /* Consistent height */
-}
-
-/* Fix: Small "Add" Button */
-.add-btn {
-    width: auto !important; /* Override the global 100% width */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 24px;
-    background: #4f46e5;
-    color: white;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
-    height: 42px; /* Match input height */
-    border: none;
-    cursor: pointer;
-    margin-top: 0; /* Reset margin */
-}
-
-.add-btn:hover {
-    background: #4338ca;
-}
-
-/* Status Badges (Pills) */
-.badge {
-    padding: 6px 14px;
-    border-radius: 50px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    display: inline-block;
-}
-
-.ok { background: #22c55e; color: white; }       /* Green */
-.expiring { background: #f59e0b; color: white; } /* Orange */
-.expired { background: #ef4444; color: white; }  /* Red */
-.low { background: #b45309; color: white; }      /* Dark Orange for stock */
-.out { background: #9f1239; color: white; }      /* Dark Red for stock */
-.in { background: #1f7a3f; color: white; }       /* Dark Green for stock */
-
-/* =========================================
-   CUSTOM MODAL (VISHWA STYLE)
-   ========================================= */
-
-/* Dark Overlay */
-.custom-modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 99999 !important;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* Darker dim */
-    backdrop-filter: blur(4px);
-    
-    /* Center the box */
-    align-items: center; 
-    justify-content: center;
-}
-
-/* The Modal Box */
-.custom-modal-content {
-    background-color: #0f172a; /* Deep dark blue/slate */
-    padding: 30px;
-    border-radius: 20px; /* More rounded corners */
-    width: 100%;
-    max-width: 420px; /* Keep it narrow like Vishwa's */
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    border: 1px solid #1e293b;
-    animation: zoomIn 0.2s ease-out;
-}
-
-@keyframes zoomIn {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-/* Title */
-.custom-modal h3 {
-    margin-top: 0;
-    color: white;
+.menu-dots {
+    color: #9ca3af;
     font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 20px;
-}
-
-/* Labels */
-.custom-modal label {
-    display: block;
-    color: #cbd5e1; /* Light gray text */
-    margin-bottom: 6px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-/* Inputs - WHITE BACKGROUND (Vishwa Style) */
-.custom-modal input, 
-.custom-modal select {
-    width: 100%;
-    padding: 12px 14px;
-    margin-bottom: 16px;
-    background: #ffffff !important; /* Force White */
-    color: #0f172a !important;      /* Dark Text */
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: 14px;
-    outline: none;
-    font-weight: 500;
-}
-
-.custom-modal input:focus,
-.custom-modal select:focus {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-/* Buttons - BOTTOM RIGHT & SMALL */
-.btn-group {
-    display: flex;
-    justify-content: flex-end; /* Push to right */
-    gap: 12px;
-    margin-top: 10px;
-}
-
-.btn-cancel {
-    background: #334155;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    width: auto !important; /* Stop stretching */
+    margin-left: 10px;
+}
+.menu-dots:hover { color: #4f46e5; }
+
+/* Modal Custom Overrides for Light Mode */
+.custom-modal-content {
+    background: white !important; /* Force white background */
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1) !important;
+}
+.custom-modal h3 { color: #111827 !important; }
+.custom-modal label { color: #374151 !important; }
+.custom-modal input { background: #f9fafb !important; border: 1px solid #e5e7eb !important; color: #111827 !important; }
+
+/* batch-ex*/
+
+/* batch-ex*/ /* update */
+
+/* =========================================
+   EMERGENCY MODAL FIX (Force Floating)
+   ========================================= */
+
+#batchModal {
+    display: none; /* Hidden by default */
+    position: fixed !important; /* FORCE it to float */
+    z-index: 999999 !important; /* Stay on top of everything */
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important; /* Full Screen Width */
+    height: 100vh !important; /* Full Screen Height */
+    background-color: rgba(0, 0, 0, 0.6) !important; /* Dark Overlay */
+    backdrop-filter: blur(4px); /* Blur effect */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Force Flex when the Javascript opens it */
+#batchModal[style*="display: flex"] {
+    display: flex !important;
+}
+
+/* Fix the White Box inside */
+.custom-modal-content {
+    background: white !important;
+    width: 450px !important;
+    max-width: 90% !important;
+    padding: 30px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5) !important;
+    border: 1px solid #e5e7eb !important;
+    position: relative !important;
+}
+
+/* Fix the inputs inside the modal */
+.custom-modal-content input, 
+.custom-modal-content select {
+    width: 100% !important;
+    padding: 12px !important;
+    margin-bottom: 15px !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background: #f9fafb !important;
+    color: #111827 !important;
+}
+
+/* Fix Buttons */
+.btn-group {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    width: 100% !important;
 }
 
 .btn-save {
-    background: #4f46e5; /* Indigo */
-    color: white;
-    border: none;
-    padding: 10px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    width: auto !important; /* Stop stretching */
+    background: #4f46e5 !important;
+    color: white !important;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    width: auto !important; /* Prevent full width stretching */
 }
 
-.btn-save:hover { background: #4338ca; }
-.btn-cancel:hover { background: #475569; }
+.btn-cancel {
+    background: #6b7280 !important;
+    color: white !important;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    width: auto !important;
+}
+
+/* batch-ex*/ /* update */
 
 /* =========================================
    STOCK BY LOCATION STYLES
    ========================================= */
 
-/* Filter Area */
-.filters select {
-    min-width: 200px; /* Make the location dropdown wide enough */
-    cursor: pointer;
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px top 50%;
-    background-size: 12px auto;
+/* 1. Filter Buttons Container */
+.tf-loc-filter-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
-/* Quantity Indicators */
-.qty-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 6px;
+/* 2. The Filter Button (White Pill) */
+.tf-loc-btn {
+    text-decoration: none;
+    padding: 8px 18px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #6b7280;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.tf-loc-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+}
+
+/* Active State (Clicked) */
+.tf-loc-btn.active {
+    background: #4f46e5;
+    color: white;
+    border-color: #4f46e5;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+/* 3. Location Badge (In Table) */
+.loc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #4f46e5; /* Purple Text */
     font-weight: 700;
     font-size: 14px;
 }
-
-.qty-high {
-    color: #4ade80; /* Bright Green text */
-    background: rgba(74, 222, 128, 0.1);
-}
-
-.qty-low {
-    color: #f87171; /* Red text for low stock */
-    background: rgba(248, 113, 113, 0.1);
-}
-
-.qty-zero {
-    color: #94a3b8; /* Grey for zero */
-    background: rgba(148, 163, 184, 0.1);
-}
-
-/* =========================================
-   TMS FINAL ISOLATED MODAL FIX
-   ========================================= */
-
-/* The Dark Background Layer - FORCED TOP LEVEL */
-#TMS_INVENTORY_MODAL_OVERLAY {
-    display: none; /* Hidden until button click */
-    position: fixed !important; 
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    background-color: rgba(0, 0, 0, 0.85) !important;
-    backdrop-filter: blur(8px);
-    z-index: 99999999 !important; /* Above everything else */
-    align-items: center; 
+.loc-badge i { 
+    background: #e0e7ff; /* Light Purple Circle */
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
     justify-content: center;
-}
-
-/* Flex trigger for the JavaScript */
-#TMS_INVENTORY_MODAL_OVERLAY.tms-active {
-    display: flex !important;
-}
-
-/* The Modal Content Box */
-#TMS_MODAL_BOX_CONTENT {
-    background-color: #111c3a !important; /* Dashboard card color */
-    padding: 35px !important;
-    border-radius: 20px !important;
-    width: 90% !important;
-    max-width: 420px !important;
-    border: 1px solid #1e293b !important;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.6) !important;
-    position: relative !important;
-}
-
-/* White Inputs - Vishwa Style */
-#TMS_MODAL_BOX_CONTENT input {
-    width: 100% !important;
-    padding: 12px !important;
-    margin-top: 5px !important;
-    margin-bottom: 20px !important;
-    background: #ffffff !important;
-    color: #000000 !important;
-    border-radius: 10px !important;
-    border: 2px solid #e2e8f0 !important;
-    font-size: 14px !important;
-    box-sizing: border-box !important;
-}
-
-#TMS_MODAL_BOX_CONTENT label {
-    color: #cbd5e1 !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    display: block !important;
-}
-
-/* Footer Buttons */
-.tms-form-footer {
-    display: flex !important;
-    justify-content: flex-end !important;
-    gap: 15px !important;
-    margin-top: 10px !important;
-}
-
-.tms-form-footer button {
-    padding: 10px 22px !important;
-    border-radius: 8px !important;
-    cursor: pointer !important;
-    border: none !important;
-    font-weight: 700 !important;
-}
-
-.tms-cancel-btn { background: #334155 !important; color: #fff !important; }
-.tms-save-btn { background: #4f46e5 !important; color: #fff !important; }
-
-/* =========================================
-   SUPPLIERS MODULE STYLES (ISOLATED)
-   ========================================= */
-
-/* 1. The Floating Overlay */
-#SUP_MODAL_OVERLAY {
-    display: none; /* Hidden by default */
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    background-color: rgba(0, 0, 0, 0.8) !important;
-    backdrop-filter: blur(8px);
-    z-index: 999999 !important;
-    align-items: center; 
-    justify-content: center;
-}
-
-/* Show when active (Triggered by JS) */
-#SUP_MODAL_OVERLAY.tms-active {
-    display: flex !important;
-}
-
-/* 2. The Modal Box Content */
-.sup-modal-box {
-    background-color: #111c3a !important; /* Matches dashboard cards */
-    padding: 30px !important;
-    border-radius: 20px !important;
-    width: 90% !important;
-    max-width: 420px !important;
-    border: 1px solid #1e293b !important;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.6) !important;
-    position: relative;
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-/* 3. White Inputs with Dark Text (Vishwa Style) */
-.sup-modal-box label {
-    display: block !important;
-    color: #cbd5e1 !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    margin-bottom: 5px !important;
-}
-
-.sup-modal-box input {
-    width: 100% !important;
-    padding: 12px !important;
-    margin-bottom: 18px !important;
-    background: #ffffff !important; 
-    color: #000000 !important;      
-    border: 2px solid #e2e8f0 !important;
-    border-radius: 10px !important;
-    font-size: 14px !important;
-    outline: none !important;
-    box-sizing: border-box !important;
-}
-
-/* 4. Footer Buttons */
-.sup-modal-footer {
-    display: flex !important;
-    justify-content: flex-end !important;
-    gap: 12px !important;
-    margin-top: 5px !important;
-}
-
-.sup-modal-footer button {
-    padding: 10px 22px !important;
-    border-radius: 8px !important;
-    cursor: pointer !important;
-    border: none !important;
-    font-weight: 700 !important;
-    width: auto !important;
-}
-
-.btn-sup-cancel { background: #334155 !important; color: white !important; }
-.btn-sup-save { background: #4f46e5 !important; color: white !important; }
-
-/* =========================================
-   TRANSACTION MODAL & BADGES
-   ========================================= */
-
-/* Badges */
-.badge-trans {
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-weight: 700;
+    border-radius: 50%;
     font-size: 12px;
-    text-transform: uppercase;
-    display: inline-block;
 }
-.type-in { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
-.type-out { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
 
-/* Modal Overlay */
-#TRANS_LOG_MODAL_OVERLAY {
-    display: none; 
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    background-color: rgba(0, 0, 0, 0.85) !important;
-    backdrop-filter: blur(5px);
-    z-index: 999999 !important;
-    align-items: center; 
+/* 4. Condition Badge */
+.condition-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #15803d; /* Dark Green Text */
+    background: #f0fdf4; /* Light Green Bg */
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid #dcfce7;
+}
+
+.condition-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: block;
+}
+.condition-badge .dot.green { background: #22c55e; }
+
+/* =========================================
+   STOCK BY LOCATION STYLES
+   ========================================= */
+
+
+/* =========================================
+   LOCATIONS PAGE STYLES
+   ========================================= */
+
+/* 1. Location Code Pill (Blue) */
+.loc-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #eff6ff; /* Light Blue Bg */
+    color: #2563eb; /* Blue Text */
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: monospace; /* Monospace for codes looks better */
+    border: 1px solid #dbeafe;
+}
+
+.loc-pill i { font-size: 14px; }
+
+/* 2. Metric Columns (Quantity & Items) */
+.metric-value {
+    font-weight: 800;
+    color: #111827;
+    font-size: 15px;
+}
+
+.metric-label {
+    font-size: 13px;
+    color: #9ca3af;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+/* 3. Action Buttons (Text only) */
+.btn-text {
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 5px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.2s;
+    text-decoration: none;
+}
+
+.edit-btn { color: #4b5563; }
+.edit-btn:hover { color: #111827; background: #f3f4f6; border-radius: 5px; }
+
+.delete-btn { color: #ef4444; }
+.delete-btn:hover { color: #dc2626; background: #fee2e2; border-radius: 5px; }
+
+/* =========================================
+   LOCATIONS PAGE STYLES
+   ========================================= */
+
+
+   /* =========================================
+   SUPPLIERS PAGE STYLES
+   ========================================= */
+
+/* 1. Supplier Profile (Name + Icon) */
+.sup-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sup-icon {
+    width: 36px;
+    height: 36px;
+    background: #dbeafe; /* Light Blue */
+    color: #2563eb;       /* Blue Icon */
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    font-size: 16px;
+    border: 1px solid #bfdbfe;
 }
 
-#TRANS_LOG_MODAL_OVERLAY.trans-active {
-    display: flex !important;
+.sup-name {
+    font-weight: 700;
+    color: #111827;
+    font-size: 14px;
 }
 
-.trans-modal-box {
-    background-color: #111c3a !important;
-    padding: 30px !important;
-    border-radius: 18px !important;
-    width: 90% !important;
-    max-width: 450px !important;
-    border: 1px solid #1e293b !important;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.5) !important;
+/* 2. Contact Items (Email/Phone) */
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4b5563; /* Grey Text */
+    font-size: 14px;
 }
 
-.trans-modal-box label {
-    display: block !important;
-    color: #cbd5e1 !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    margin-bottom: 6px !important;
+.contact-item i {
+    color: #9ca3af; /* Lighter Grey Icon */
+    font-size: 15px;
 }
 
-.trans-modal-box input, 
-.trans-modal-box select {
-    width: 100% !important;
-    padding: 12px !important;
-    margin-bottom: 16px !important;
-    background: #ffffff !important;
-    color: #000000 !important;
-    border: 2px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    box-sizing: border-box !important;
+/* 3. Ensure Table alignment */
+.tf-table td {
+    vertical-align: middle;
 }
 
-.trans-modal-footer {
-    display: flex !important;
-    justify-content: flex-end !important;
-    gap: 12px !important;
-    margin-top: 10px !important;
-}
+   /* =========================================
+   SUPPLIERS PAGE STYLES
+   ========================================= */
 
-.trans-btn-cancel { background: #334155 !important; color: white !important; border: none !important; padding: 10px 20px !important; border-radius: 8px !important; }
-.trans-btn-save { background: #4f46e5 !important; color: white !important; border: none !important; padding: 10px 20px !important; border-radius: 8px !important; font-weight: bold !important; }
 
 /* =========================================
    STAFF MANAGEMENT STYLES
    ========================================= */
 
-/* 1. Role Badges (Purple for Admin, Blue for Staff) */
-.badge-role {
-    padding: 6px 14px;
-    border-radius: 50px;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: inline-block;
+/* 1. User Profile (Avatar + Name) */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.role-admin {
-    background: rgba(124, 58, 237, 0.2);
-    color: #a78bfa; /* Light Purple */
-    border: 1px solid rgba(124, 58, 237, 0.3);
-}
-
-.role-staff {
-    background: rgba(59, 130, 246, 0.2);
-    color: #60a5fa; /* Light Blue */
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-/* 2. ISOLATED STAFF MODAL */
-#STAFF_MODAL_OVERLAY {
-    display: none; 
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    background-color: rgba(0, 0, 0, 0.85) !important;
-    backdrop-filter: blur(5px);
-    z-index: 999999 !important;
-    align-items: center; 
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    background: #f3f4f6;
+    color: #4b5563;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    border: 1px solid #e5e7eb;
 }
 
-#STAFF_MODAL_OVERLAY.staff-active {
-    display: flex !important;
+.user-name {
+    font-weight: 600;
+    color: #111827;
+    font-size: 14px;
 }
 
-.staff-modal-box {
-    background-color: #111c3a !important;
-    padding: 35px !important;
-    border-radius: 20px !important;
-    width: 90% !important;
-    max-width: 400px !important;
-    border: 1px solid #1e293b !important;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
-    position: relative;
-    animation: staffZoom 0.2s ease-out;
+/* 2. Role Badges */
+.badge-role-admin {
+    background: #be123c; /* Red */
+    color: white;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.badge-role-admin::before { content: "🛡"; font-size:10px; }
+
+.badge-role-staff {
+    background: #f3f4f6; /* Grey */
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.badge-role-staff::before { content: "👤"; font-size:10px; }
+
+
+/* 3. Status Badge */
+.status-active {
+    background: #dcfce7; /* Light Green */
+    color: #15803d;      /* Dark Green */
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
-@keyframes staffZoom {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+/* 4. Reset Password Button */
+.reset-btn { 
+    color: #ea580c; /* Orange */
+    margin-right: 15px;
 }
-
-/* Inputs */
-.staff-modal-box label {
-    display: block !important;
-    color: #cbd5e1 !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    margin-bottom: 6px !important;
-}
-
-.staff-modal-box input,
-.staff-modal-box select {
-    width: 100% !important;
-    padding: 12px !important;
-    margin-bottom: 18px !important;
-    background: #ffffff !important;
-    color: #000000 !important;
-    border: 2px solid #e2e8f0 !important;
-    border-radius: 10px !important;
-    font-size: 14px !important;
-    box-sizing: border-box !important;
-}
-
-/* Buttons */
-.staff-modal-footer {
-    display: flex !important;
-    justify-content: flex-end !important;
-    gap: 12px !important;
-    margin-top: 10px !important;
-}
-
-.staff-btn-cancel {
-    background: #334155 !important; color: white !important; 
-    border: none !important; padding: 10px 22px !important; border-radius: 8px !important; cursor: pointer !important;
-}
-
-.staff-btn-save {
-    background: #4f46e5 !important; color: white !important; 
-    border: none !important; padding: 10px 22px !important; border-radius: 8px !important; cursor: pointer !important; font-weight: bold !important;
+.reset-btn:hover { 
+    color: #c2410c; 
+    background: #ffedd5; 
+    border-radius: 5px; 
 }
 
 /* =========================================
-   DASHBOARD HOME STYLES
+   STAFF MANAGEMENT STYLES
    ========================================= */
 
-/* 1. Top Summary Cards (Grid Layout) */
-.cards {
+
+
+   /* =========================================
+   TRANSACTION PAGE STYLES (Audit View)
+   ========================================= */
+
+/* 1. Summary Cards Row */
+.summary-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
     gap: 20px;
-    margin-bottom: 24px;
+    margin-bottom: 25px;
 }
 
-.card-summary {
-    background: #16234a; /* Matches your theme */
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-}
-
-.card-summary:hover {
-    transform: translateY(-5px);
-}
-
-.card-summary h3 {
-    margin: 0 0 10px 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #c9d6ff; /* Light Blue Text */
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.big-number {
-    font-size: 36px;
-    font-weight: 800;
-    color: white;
-    margin: 0;
-}
-
-/* 2. Dashboard Sections (Lists) */
-.dash-section {
-    background: #16234a;
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 20px;
-}
-
-.dash-section h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 18px;
-    color: white;
-    border-bottom: 1px solid #1e293b;
-    padding-bottom: 10px;
-}
-
-.dash-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.dash-list li {
-    padding: 12px 0;
-    border-bottom: 1px solid #1e293b;
-    color: #cbd5e1;
-    font-size: 14px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.dash-list li:last-child {
-    border-bottom: none;
-}
-
-/* 3. Logout Button (Sidebar specific) */
-.logout-link {
-    display: block;
-    text-align: center;
-    background: #9f1239; /* Red */
-    padding: 12px;
-    border-radius: 10px;
-    text-decoration: none;
-    color: white !important;
-    font-weight: 700;
-    margin-top: 30px;
-    transition: 0.2s;
-}
-
-.logout-link:hover {
-    background: #be123c;
-}
-
-/* Fix for Dashboard List Spacing */
-.dash-list li {
-    padding: 15px 10px !important; /* More breathing room */
-    border-bottom: 1px solid #1e293b;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.dash-list li:hover {
-    background-color: rgba(255, 255, 255, 0.02); /* Subtle hover effect */
-}
-
-/* Ensure the chart area looks distinct */
-.dash-section div {
-    border: 1px dashed #334155; /* Dashed border for the "Coming Soon" box */
-}
-
-/* --- RECEIVE STOCK PAGE STYLES --- */
-
-/* The White Card Container */
-.stock-card {
+.summary-card {
     background: white;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-    margin-bottom: 20px;
-    text-align: left;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-/* Form Inputs */
-.form-group {
-    margin-bottom: 15px;
-}
-
-label {
-    display: block;
-    margin-bottom: 8px;
+.sum-title {
+    margin: 0;
+    font-size: 13px;
     font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.sum-value {
+    margin: 10px 0 5px 0;
+    font-size: 32px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.sum-sub {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+/* 2. Text Colors */
+.text-green { color: #16a34a !important; } /* Green Text */
+.text-red   { color: #dc2626 !important; } /* Red Text */
+
+/* 3. Transaction Type Badges */
+.badge-in {
+    background: #dcfce7;
+    color: #166534;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.badge-out {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* 4. Batch Pill */
+.batch-pill {
+    background: #eff6ff;
+    color: #3b82f6;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: monospace;
+    border: 1px solid #dbeafe;
+}
+
+/* 5. Location Link Style */
+.loc-link {
+    color: #4f46e5;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+/* 6. Filter Select */
+.filter-select {
+    padding: 10px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
     color: #374151;
     font-size: 14px;
-}
-
-input[type="text"], 
-input[type="number"], 
-select {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    font-size: 16px;
-    background: #f9fafb;
     outline: none;
-    transition: 0.2s;
-}
-
-input:focus, select:focus {
-    border-color: #5a48f5;
-    background: white;
-}
-
-/* Item Preview Box (When item is found) */
-.item-preview-box {
-    background: #f0fdf4;
-    border: 2px dashed #22c55e;
-    padding: 20px;
-    border-radius: 15px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.item-preview-title {
-    color: #166534;
-    font-weight: bold;
-    font-size: 12px;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
-}
-
-.item-preview-name {
-    color: #14532d;
-    font-size: 22px;
-    font-weight: 800;
-    margin-bottom: 5px;
-}
-
-.item-preview-code {
-    color: #6b7280;
-    font-family: monospace;
-    font-size: 14px;
-}
-
-/* Buttons */
-.btn-action {
-    width: 100%;
-    padding: 15px;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: bold;
     cursor: pointer;
-    transition: 0.2s;
-    color: white;
-    margin-top: 10px;
 }
 
-.btn-scan {
-    background: #111827; /* Dark */
-}
-.btn-scan:hover { background: #000; }
 
-.btn-save {
-    background: #22c55e; /* Green */
+/* 1. Force Vertical Alignment (Centers everything vertically) */
+#transTable td {
+    vertical-align: middle !important;
+    padding: 16px 12px !important; /* More breathing room */
 }
-.btn-save:hover { background: #16a34a; }
 
-.btn-cancel {
-    background: #ef4444; /* Red */
-    display: block;
+/* 2. Prevent Text Wrapping on Badges */
+.batch-pill, 
+.badge-in, 
+.badge-out, 
+.loc-link {
+    white-space: nowrap !important; /* STOP text from breaking lines */
+    display: inline-block; /* Keeps shape solid */
+}
+
+/* 3. Batch Pill Specifics */
+.batch-pill {
+    min-width: 80px; /* Force a minimum width */
     text-align: center;
-    text-decoration: none;
 }
-.btn-cancel:hover { background: #dc2626; }
 
-/* Success/Error Messages */
-.alert-box {
-    padding: 15px;
-    border-radius: 12px;
-    font-weight: bold;
+/* 4. Type Badge Alignment (Make them equal width) */
+.badge-in, .badge-out {
+    width: 60px; /* Fixed width so they line up */
     text-align: center;
-    margin-bottom: 20px;
+    padding: 6px 0; /* Adjust padding since width is fixed */
 }
-.alert-success { background: #dcfce7; color: #166534; }
-.alert-error { background: #fee2e2; color: #991b1b; }
+
+/* 5. Date Column Cleanup */
+#transTable td:nth-last-child(2) { /* Selects the Time column */
+    white-space: nowrap; /* Keep date on one line if possible */
+    font-size: 12px;
+}
+
+/* 6. Item Name Column (Give it the most space) */
+#transTable td:nth-child(2) {
+    width: 30%; /* Force item name to take 30% of table width */
+}
+
+   /* =========================================
+   TRANSACTION PAGE STYLES (Audit View)
+   ========================================= */
