@@ -1,21 +1,42 @@
 <?php
-session_start();
+// 1. Start Session (Safe Mode)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// 2. SECURITY GATE: LOGIN CHECK 🔒
+// If user_id is missing OR the role is NOT Admin, kick them out!
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
+    header("Location: ../index.php"); // Send back to Admin Login
+    exit();
+}
+
+// 3. DATABASE CONNECTION
 include '../config/db.php';
 
 // --- CALCULATE DASHBOARD NUMBERS ---
+$total_items = 0;
 $q1 = mysqli_query($conn, "SELECT COUNT(*) as count FROM items");
-$total_items = ($q1) ? mysqli_fetch_assoc($q1)['count'] : 0;
+if ($q1) {
+    $total_items = mysqli_fetch_assoc($q1)['count'];
+}
 
 $low_stock = 0;
-if (mysqli_query($conn, "DESCRIBE stock")) {
+if ($conn) {
     $q2 = mysqli_query($conn, "SELECT COUNT(*) as count FROM stock WHERE quantity < 20");
-    $low_stock = ($q2) ? mysqli_fetch_assoc($q2)['count'] : 0;
+    if ($q2) {
+        $low_stock = mysqli_fetch_assoc($q2)['count'];
+    }
 }
 
 $today = date('Y-m-d');
+$today_scans = 0;
 $q3 = mysqli_query($conn, "SELECT COUNT(*) as count FROM stock_transactions WHERE DATE(transaction_time) = '$today'");
-$today_scans = ($q3) ? mysqli_fetch_assoc($q3)['count'] : 0;
+if ($q3) {
+    $today_scans = mysqli_fetch_assoc($q3)['count'];
+}
 
+// Recent Transactions
 $trans_query = "SELECT t.*, i.item_name 
                 FROM stock_transactions t 
                 JOIN items i ON t.item_id = i.item_id 
@@ -65,17 +86,10 @@ $trans_result = mysqli_query($conn, $trans_query);
             </div>
 
             <div class="dash-section">
-                <h3>Stock Movements</h3>
-                <div style="height:150px; background:#0f1a33; border:1px dashed #334155; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#64748b;">
-                    [ Chart UI - Coming Soon ]
-                </div>
-            </div>
-
-            <div class="dash-section">
                 <h3>Recent Transactions</h3>
                 <ul class="dash-list">
                     <?php
-                    if (mysqli_num_rows($trans_result) > 0) {
+                    if ($trans_result && mysqli_num_rows($trans_result) > 0) {
                         while ($row = mysqli_fetch_assoc($trans_result)) {
                             $type = strtoupper($row['transaction_type']);
                             $color = ($type == 'IN') ? '#22c55e' : '#ef4444';
