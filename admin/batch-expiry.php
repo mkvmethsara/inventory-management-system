@@ -1,4 +1,15 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
+// SECURITY GATE 🔒
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
+    // If not logged in, or not an Admin, kick them out
+    header("Location: ../index.php");
+    exit();
+}
+?>
+
+<?php
 include '../config/db.php';
 
 // --- 1. HANDLE FORM SUBMISSION ---
