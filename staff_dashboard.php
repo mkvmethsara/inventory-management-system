@@ -2,7 +2,7 @@
 session_start();
 include 'config/db.php';
 
-// 1. SECURITY: LOGIN CHECK 🔒
+// 1. SECURITY: LOGIN CHECK
 // If the user is NOT logged in (neither Admin nor Staff), kick them out.
 if (!isset($_SESSION['user_id'])) {
     header("Location: user-login.php");
@@ -119,7 +119,7 @@ if ($conn) {
 
     <div class="header">
         <div style="font-size:14px; opacity:0.8; font-weight:600;">WELCOME BACK,</div>
-        <div class="user-name"><?php echo htmlspecialchars($username); ?> 👋</div>
+        <div class="user-name"><?php echo htmlspecialchars($username); ?> </div>
     </div>
 
     <div class="menu-grid">
@@ -141,7 +141,7 @@ if ($conn) {
         </a>
     </div>
 
-    <a href="staff_logout.php" class="logout-btn">🔒 Logout</a>
+    <a href="staff_logout.php" class="logout-btn"> Logout</a>
 
 </body>
 
