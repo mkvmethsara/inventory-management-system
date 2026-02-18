@@ -16,7 +16,7 @@ if (isset($_POST['move_stock_btn'])) {
     $old_loc   = $_POST['old_location_id'];
     $new_loc   = $_POST['new_location_id'];
 
-    // Move logic: Update the location_id for this specific Item+Batch combination
+    // Move logic
     $sql = "UPDATE stock SET location_id = '$new_loc' 
             WHERE item_id = '$item_id' 
             AND batch_id = '$batch_id' 
@@ -39,8 +39,6 @@ if ($filter_loc !== 'all') {
 }
 
 // --- FETCH STOCK DATA ---
-// FIXED: Removed 's.stock_id' which was causing the crash.
-// We now select item_id, batch_id, and location_id explicitly.
 $sql = "SELECT 
             s.item_id, 
             s.batch_id, 
@@ -56,7 +54,6 @@ $sql = "SELECT
 
 $result = mysqli_query($conn, $sql);
 
-// Check if query failed
 if (!$result) {
     die("<div style='padding:20px; color:red;'><b>CRITICAL SQL ERROR:</b> " . mysqli_error($conn) . "</div>");
 }
@@ -76,7 +73,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
     <meta charset="UTF-8">
     <title>TrackFlow – Stock by Location</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css?v=42">
+    <link rel="stylesheet" href="../assets/css/style.css?v=43">
 </head>
 
 <body class="trackflow-body">
@@ -135,7 +132,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
                             $batch_display = $row['batch_id'] ? "B" . $row['batch_id'] : "N/A";
                             $qty = number_format($row['quantity']);
                             
-                            // Prepare data for the JS function
+                            // Prepare data for JS
                             $item_id = $row['item_id'];
                             $batch_id = $row['batch_id'];
                             $old_loc = $row['location_id'];
@@ -159,7 +156,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
                             // Quantity
                             echo "<td style='font-weight:800; font-size:16px; color:#111827;'>$qty</td>";
 
-                            // ACTION BUTTON (Move)
+                            // ACTION BUTTON
                             echo "<td style='text-align:right; padding-right:30px;'>
                                     <button class='tf-btn-secondary' style='font-size:12px; padding:6px 12px;' 
                                         onclick='openMoveModal(\"$item_id\", \"$batch_id\", \"$old_loc\", \"$item_name\", \"$loc_code\")'>
@@ -194,7 +191,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
                 <select name="new_location_id" required>
                     <?php foreach ($locations_list as $l): ?>
                         <option value="<?php echo $l['location_id']; ?>">
-                            <?php echo $l['location_code'] . " (" . $l['location_name'] . ")"; ?>
+                            <?php echo $l['location_code']; ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -212,17 +209,14 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
         const inputItem = document.getElementById("input_item_id");
         const inputBatch = document.getElementById("input_batch_id");
         const inputOldLoc = document.getElementById("input_old_loc");
-        
         const labelItem = document.getElementById("move_item_label");
         const displayLoc = document.getElementById("current_loc_display");
 
         function openMoveModal(itemId, batchId, oldLocId, itemName, locCode) {
-            // Fill hidden inputs so PHP knows what to move
             inputItem.value = itemId;
             inputBatch.value = batchId;
             inputOldLoc.value = oldLocId;
             
-            // Update UI text
             labelItem.innerText = "Moving: " + itemName + " (Batch " + batchId + ")";
             displayLoc.value = locCode;
             
