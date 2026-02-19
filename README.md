@@ -130,3 +130,16 @@ inventory-management-system
 
 1. Create database
 
+2. Import
+
+
+3. Update database connection inside
+
+
+---
+
+## ▶️ How to Run Locally
+
+1. Install XAMPP
+2. Copy project folder to
+
