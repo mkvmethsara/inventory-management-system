@@ -169,13 +169,6 @@ Academic – Campus Project
 
 ---
 
-## ✍️ Author
-
-Abegoda Liyana Arachchige  
-Sachin Vishwa Liyanage
-
----
-
 ## 📄 License
 
 For educational use only.
