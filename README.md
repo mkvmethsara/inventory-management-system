@@ -129,12 +129,8 @@ inventory-management-system
 ## 🧪 Database Setup
 
 1. Create database
-
 2. Import
-
-
 3. Update database connection inside
-
 
 ---
 
@@ -142,4 +138,44 @@ inventory-management-system
 
 1. Install XAMPP
 2. Copy project folder to
+3. Start Apache & MySQL
+4. Open browser
 
+
+
+---
+
+## 🌐 Hosting Requirements
+
+- PHP hosting with MySQL
+- HTTPS enabled (required for camera based QR scanning)
+
+---
+
+## 🧠 Key Features
+
+- Batch based inventory tracking
+- Expiry date handling
+- Location wise stock control
+- Automatic transaction logging
+- QR / RFID based data entry
+- Stock transfer between locations
+
+---
+
+## 🎓 Project Type
+
+Academic – Campus Project
+
+---
+
+## ✍️ Author
+
+Abegoda Liyana Arachchige  
+Sachin Vishwa Liyanage
+
+---
+
+## 📄 License
+
+For educational use only.
