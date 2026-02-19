@@ -56,7 +56,7 @@ This system allows warehouse staff and administrators to:
 ---
 
 ## 📁 Project Structure
-
+```
 inventory-management-system
 │
 ├── admin/
@@ -80,7 +80,7 @@ inventory-management-system
 ├── user-login.php
 ├── database.sql
 └── README.md
-
+```
 
 ---
 
