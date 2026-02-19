@@ -80,3 +80,53 @@ inventory-management-system
 ├── user-login.php
 ├── database.sql
 └── README.md
+
+
+---
+
+## 🗄️ Database Tables
+
+- suppliers
+- items
+- users
+- locations
+- item_batches
+- stock
+- stock_transactions
+
+---
+
+## 🔗 ER Relationship Summary
+
+- One supplier → many items
+- One item → many batches
+- One batch → many locations (via stock table)
+- Each transaction is linked to:
+  - item
+  - batch
+  - location
+  - user
+
+---
+
+## 📷 QR / RFID Scan Workflow
+
+1. User opens scan page
+2. QR / RFID value is scanned
+3. Item and batch are identified
+4. Stock table is updated
+5. Transaction is recorded in stock_transactions
+
+---
+
+## 🔐 Login System
+
+- Admin and staff users login using `user-login.php`
+- After login users are redirected to the staff dashboard
+
+---
+
+## 🧪 Database Setup
+
+1. Create database
+
