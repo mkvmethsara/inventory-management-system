@@ -57,3 +57,26 @@ This system allows warehouse staff and administrators to:
 
 ## 📁 Project Structure
 
+inventory-management-system
+│
+├── admin/
+├── actions/
+├── assets/
+├── config/
+├── includes/
+├── project/
+│ ├── move-stock.html
+│ ├── receive-stock.html
+│ ├── recent-activity.html
+│ ├── stock-lookup.html
+│ └── user.html
+│
+├── index.php
+├── staff_dashboard.php
+├── move-stock.php
+├── receive-stock.php
+├── stock-lookup.php
+├── transactions.php
+├── user-login.php
+├── database.sql
+└── README.md
