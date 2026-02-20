@@ -45,12 +45,12 @@ if (isset($_POST['add_item_btn'])) {
     $cat  = $_POST['category'];
     $sup  = $_POST['supplier_id'];
     
-    // Auto-generate RFID and Min Level for demo
-    $rfid = "RF-" . rand(1000, 9999);
+    // Default Min Level
     $min  = 10;
 
-    $sql = "INSERT INTO items (item_name, item_code, category, supplier_id, rfid_tag_id, minimum_level, created_at) 
-            VALUES ('$name', '$code', '$cat', '$sup', '$rfid', '$min', NOW())";
+    // Removed the RFID insertion logic to keep the database clean
+    $sql = "INSERT INTO items (item_name, item_code, category, supplier_id, minimum_level, created_at) 
+            VALUES ('$name', '$code', '$cat', '$sup', '$min', NOW())";
 
     if (mysqli_query($conn, $sql)) {
         echo "<script>alert('✅ New Item Added!'); window.location.href='items-inventory.php';</script>";
@@ -101,7 +101,7 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
         <div class="tf-page-header">
             <div class="tf-page-title">
                 <h2>Product Catalog</h2>
-                <p>Manage item details and RFID assignments</p>
+                <p>Manage item details and definitions</p>
             </div>
             <button onclick="openModal()" class="tf-btn-primary">
                 <i class="bi bi-plus-lg"></i> Register New Item
@@ -119,7 +119,6 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
                     <tr>
                         <th>Item Details</th>
                         <th>Category</th>
-                        <th>RFID Tag</th>
                         <th>Min Level</th>
                         <th>Supplier</th>
                         <th style="text-align:right">Actions</th>
@@ -139,7 +138,6 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
                                     <?php echo $row['category']; ?>
                                 </span>
                             </td>
-                            <td style="font-family:monospace; color:#6b7280;"><?php echo $row['rfid_tag_id']; ?></td>
                             <td style="font-weight:700;"><?php echo $row['minimum_level']; ?></td>
                             <td style="color:#6b7280;"><?php echo htmlspecialchars($row['supplier_name'] ?? 'Unknown'); ?></td>
                             
