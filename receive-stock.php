@@ -17,27 +17,32 @@ $message_type = "";
 // 3. HANDLE STOCK SUBMISSION
 if (isset($_POST['save_stock'])) {
     $item_id = $_POST['item_id'];
-    $batch_id = $_POST['batch_id'];
     $location_id = $_POST['location_id'];
     $quantity = (int)$_POST['quantity'];
+    $expiry_date = $_POST['expiry_date']; // NEW: Get the manually entered expiry date
+    $received_date = date('Y-m-d'); // Automatically set received date to today
 
-    // Update Stock Logic
-    $check_stock = mysqli_query($conn, "SELECT * FROM stock WHERE item_id='$item_id' AND batch_id='$batch_id' AND location_id='$location_id'");
+    // STEP A: Create a brand new Batch first
+    $insert_batch = "INSERT INTO item_batches (item_id, received_date, expiry_date) VALUES ('$item_id', '$received_date', '$expiry_date')";
 
-    if (mysqli_num_rows($check_stock) > 0) {
-        $update = "UPDATE stock SET quantity = quantity + $quantity WHERE item_id='$item_id' AND batch_id='$batch_id' AND location_id='$location_id'";
-        mysqli_query($conn, $update);
+    if (mysqli_query($conn, $insert_batch)) {
+        // Get the ID of the batch we just created
+        $new_batch_id = mysqli_insert_id($conn);
+
+        // STEP B: Insert into Stock (Since it's a new batch, it's always an INSERT, never an UPDATE)
+        $insert_stock = "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', '$new_batch_id', '$location_id', '$quantity')";
+        mysqli_query($conn, $insert_stock);
+
+        // STEP C: Log Transaction
+        mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
+                            VALUES ('$item_id', '$new_batch_id', '$location_id', '$user_id', 'IN', '$quantity', NOW(), 'QR-AUTO')");
+
+        $message = "✅ Success! Stock Added to New Batch (#$new_batch_id).";
+        $message_type = "success";
     } else {
-        $insert = "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', '$batch_id', '$location_id', '$quantity')";
-        mysqli_query($conn, $insert);
+        $message = "❌ Database Error: " . mysqli_error($conn);
+        $message_type = "error";
     }
-
-    // Log Transaction
-    mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
-                        VALUES ('$item_id', '$batch_id', '$location_id', '$user_id', 'IN', '$quantity', NOW(), 'QR-AUTO')");
-
-    $message = "✅ Success! Stock Added.";
-    $message_type = "success";
 }
 
 // 4. HANDLE QR SCAN
@@ -49,7 +54,7 @@ if (isset($_POST['qr_code'])) {
         $message = "⚠️ You scanned a Website Link! Please use a Text-Only QR.";
         $message_type = "error";
     } else {
-        // Search for Item (FIXED: Removed RFID search)
+        // Search for Item
         $sql = "SELECT * FROM items WHERE item_code = '$code'";
         $result = mysqli_query($conn, $sql);
 
@@ -78,7 +83,7 @@ if (isset($_POST['qr_code'])) {
     <link rel="stylesheet" href="assets/css/staff_style.css">
 
     <style>
-        /* 1. The Scanner Box (Hidden by default until button clicked) */
+        /* 1. The Scanner Box */
         .scanner-container {
             text-align: center;
             margin-top: 20px;
@@ -94,7 +99,6 @@ if (isset($_POST['qr_code'])) {
             overflow: hidden;
             position: relative;
             display: none;
-            /* Hidden initially */
             border: 4px solid #4f46e5;
         }
 
@@ -110,7 +114,6 @@ if (isset($_POST['qr_code'])) {
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
             display: inline-block;
-            /* Ensure it is visible */
         }
 
         .btn-start-scan:hover {
@@ -231,19 +234,8 @@ if (isset($_POST['qr_code'])) {
                 <form method="POST" style="margin-top:20px;">
                     <input type="hidden" name="item_id" value="<?php echo $scanned_item['item_id']; ?>">
 
-                    <div style="text-align:left; margin-bottom:5px; font-weight:bold; color:#4b5563;">Select Batch:</div>
-                    <select name="batch_id" class="modern-select" required>
-                        <?php
-                        $b_sql = mysqli_query($conn, "SELECT * FROM item_batches WHERE item_id = '" . $scanned_item['item_id'] . "'");
-                        if (mysqli_num_rows($b_sql) > 0) {
-                            while ($b = mysqli_fetch_assoc($b_sql)) {
-                                echo "<option value='" . $b['batch_id'] . "'>#" . $b['batch_id'] . " (Exp: " . $b['expiry_date'] . ")</option>";
-                            }
-                        } else {
-                            echo "<option value='' disabled selected>⚠️ No Batches! (Add in Admin)</option>";
-                        }
-                        ?>
-                    </select>
+                    <div style="text-align:left; margin-bottom:5px; font-weight:bold; color:#4b5563;">Expiry Date:</div>
+                    <input type="date" name="expiry_date" class="modern-input" required>
 
                     <div style="text-align:left; margin-bottom:5px; font-weight:bold; color:#4b5563;">Location:</div>
                     <select name="location_id" class="modern-select" required>
@@ -269,9 +261,7 @@ if (isset($_POST['qr_code'])) {
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script>
         function startScan() {
-            // Show the camera box
             document.getElementById("scannerBox").style.display = "block";
-            // Hide the button
             document.getElementById("scanBtn").style.display = "none";
 
             const html5QrCode = new Html5Qrcode("reader");
@@ -286,17 +276,13 @@ if (isset($_POST['qr_code'])) {
                     }
                 },
                 (decodedText) => {
-                    // Success!
                     html5QrCode.stop();
                     document.getElementById("hiddenCode").value = decodedText;
                     document.getElementById("scanForm").submit();
                 },
-                (errorMessage) => {
-                    // Scanning... ignore errors
-                }
+                (errorMessage) => {}
             ).catch(err => {
                 alert("Camera Error: " + err);
-                // If error, show button again
                 document.getElementById("scannerBox").style.display = "none";
                 document.getElementById("scanBtn").style.display = "inline-block";
             });
