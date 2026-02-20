@@ -34,7 +34,7 @@ if (isset($_POST['save_stock'])) {
 
     // Log Transaction
     mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
-                        VALUES ('$item_id', '$batch_id', '$location_id', '$user_id', 'IN', '$quantity', NOW(), 'RFID-AUTO')");
+                        VALUES ('$item_id', '$batch_id', '$location_id', '$user_id', 'IN', '$quantity', NOW(), 'QR-AUTO')");
 
     $message = "✅ Success! Stock Added.";
     $message_type = "success";
@@ -49,9 +49,14 @@ if (isset($_POST['qr_code'])) {
         $message = "⚠️ You scanned a Website Link! Please use a Text-Only QR.";
         $message_type = "error";
     } else {
-        // Search for Item
-        $sql = "SELECT * FROM items WHERE item_code = '$code' OR rfid_tag_id = '$code'";
+        // Search for Item (FIXED: Removed RFID search)
+        $sql = "SELECT * FROM items WHERE item_code = '$code'";
         $result = mysqli_query($conn, $sql);
+
+        // Safety check to prevent fatal crashes
+        if (!$result) {
+            die("<div style='padding:20px; color:red; text-align:center;'><b>Database Error:</b> " . mysqli_error($conn) . "</div>");
+        }
 
         if (mysqli_num_rows($result) > 0) {
             $scanned_item = mysqli_fetch_assoc($result);
@@ -304,7 +309,6 @@ if (isset($_POST['qr_code'])) {
             bottom: 20px;
             right: 20px;
             background: #1e1b4b;
-            /* Matches your dashboard header color */
             color: white;
             width: 50px;
             height: 50px;
