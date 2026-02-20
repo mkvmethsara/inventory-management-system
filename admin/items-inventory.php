@@ -181,9 +181,8 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
 
                 <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Category</label>
                 <select name="category" id="category_input">
-                    <option value="Medicine">Medicine</option>
-                    <option value="Supplies">Supplies</option>
-                    <option value="Equipment">Equipment</option>
+                    <option value="Dry">Dry</option>
+                    <option value="Drinks">Drinks</option>
                 </select>
 
                 <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Supplier</label>
@@ -226,7 +225,12 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
             document.getElementById("item_id_input").value = id;
             document.getElementById("item_name_input").value = name;
             document.getElementById("item_code_input").value = code;
-            document.getElementById("category_input").value = cat;
+            
+            // Set the category (safeguard in case an old category is clicked)
+            let catDropdown = document.getElementById("category_input");
+            let optionExists = Array.from(catDropdown.options).some(option => option.value === cat);
+            catDropdown.value = optionExists ? cat : "Dry";
+            
             document.getElementById("supplier_input").value = sup;
             
             document.getElementById("save_btn").name = "update_item_btn"; // Set PHP Action
