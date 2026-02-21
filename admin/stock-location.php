@@ -1,5 +1,7 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // SECURITY GATE 🔒
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
@@ -12,7 +14,7 @@ include '../config/db.php';
 // --- 1. HANDLE MOVE STOCK (Updated for your DB) ---
 if (isset($_POST['move_stock_btn'])) {
     $item_id   = $_POST['item_id'];
-    $batch_id  = $_POST['batch_id']; 
+    $batch_id  = $_POST['batch_id'];
     $old_loc   = $_POST['old_location_id'];
     $new_loc   = $_POST['new_location_id'];
     $move_qty  = (int)$_POST['move_quantity'];
@@ -42,7 +44,7 @@ if (isset($_POST['move_stock_btn'])) {
     }
 
     // --- C. EXECUTE MOVE ---
-    
+
     // 1. Decrease Source (Old Location)
     $new_source_qty = $source_row['quantity'] - $move_qty;
     if ($new_source_qty == 0) {
@@ -66,7 +68,7 @@ if (isset($_POST['move_stock_btn'])) {
     } else {
         // Insert new record
         // Use '0' or NULL for batch_id depending on how you store empty batches. Assuming '0' or ID from POST.
-        $b_val = (empty($batch_id)) ? "0" : "'$batch_id'"; 
+        $b_val = (empty($batch_id)) ? "0" : "'$batch_id'";
         mysqli_query($conn, "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', $b_val, '$new_loc', '$move_qty')");
     }
 
@@ -98,7 +100,9 @@ $sql = "SELECT
         ORDER BY l.location_code ASC";
 
 $result = mysqli_query($conn, $sql);
-if (!$result) { die("Database Error: " . mysqli_error($conn)); }
+if (!$result) {
+    die("Database Error: " . mysqli_error($conn));
+}
 
 // --- FETCH LOCATIONS ---
 $loc_res = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code ASC");
@@ -110,6 +114,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>TrackFlow – Stock by Location</title>
@@ -129,7 +134,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
             <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
             <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
             <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
-            <div class="nav-label">ADMINISTRATION</div>
+
             <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
             <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
@@ -171,9 +176,9 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
                             // Check if batch is 0 or empty
                             $batch_val = $row['batch_id'];
                             $batch_display = ($batch_val && $batch_val != '0') ? "B" . $batch_val : "No Batch";
-                            
+
                             $qty = number_format($row['quantity']);
-                            
+
                             // Prepare JS data
                             $item_id = $row['item_id'];
                             $batch_id = $row['batch_id'];
@@ -187,7 +192,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
                             echo "<td style='padding-left:30px;'>
                                     <span class='loc-badge'><i class='bi bi-geo-alt-fill'></i> $loc_code</span>
                                   </td>";
-                            
+
                             echo "<td style='font-weight:600; color:#1f2937;'>" . $row['item_name'] . "</td>";
                             echo "<td style='color:#6b7280; font-size:13px;'>" . $batch_display . "</td>";
                             echo "<td style='font-weight:800; font-size:16px; color:#111827;'>$qty</td>";
@@ -214,7 +219,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
         <div class="modal-box">
             <h3 style="margin-top:0; margin-bottom:5px;">Move Stock</h3>
             <p id="move_item_label" style="margin-top:0; color:#6b7280; font-size:14px; margin-bottom:20px;">...</p>
-            
+
             <form method="POST">
                 <input type="hidden" name="item_id" id="input_item_id">
                 <input type="hidden" name="batch_id" id="input_batch_id">
@@ -260,22 +265,27 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
             inputItem.value = itemId;
             inputBatch.value = batchId;
             inputOldLoc.value = oldLocId;
-            
+
             let batchText = (batchId && batchId != '0') ? " (Batch " + batchId + ")" : "";
             labelItem.innerText = "Moving: " + itemName + batchText;
-            
+
             displayLoc.value = locCode;
-            
-            inputQty.value = ""; 
-            inputQty.max = maxQty; 
+
+            inputQty.value = "";
+            inputQty.max = maxQty;
             inputQty.placeholder = "Max: " + maxQty;
             labelMax.innerText = "(Available: " + maxQty + ")";
 
             modal.style.display = "flex";
         }
 
-        function closeModal() { modal.style.display = "none"; }
-        window.onclick = function(e) { if(e.target == modal) closeModal(); }
+        function closeModal() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(e) {
+            if (e.target == modal) closeModal();
+        }
     </script>
 </body>
+
 </html>
