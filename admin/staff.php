@@ -94,7 +94,6 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
             align-items: center;
         }
 
-        /* Clean Icon Buttons instead of Big Text Buttons */
         .btn-icon {
             border: none;
             background: #f3f4f6;
@@ -107,39 +106,21 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
             cursor: pointer;
             transition: 0.2s;
             text-decoration: none;
-            /* For the <a> tag */
         }
 
-        .btn-icon:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
+        .btn-icon:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+        .icon-edit { color: #4b5563; }
+        .icon-edit:hover { background: #e5e7eb; color: #111827; }
+        .icon-key { color: #f59e0b; }
+        .icon-key:hover { background: #fef3c7; color: #d97706; }
+        .icon-trash { color: #ef4444; }
+        .icon-trash:hover { background: #fee2e2; color: #b91c1c; }
 
-        .icon-edit {
-            color: #4b5563;
-        }
-
-        .icon-edit:hover {
-            background: #e5e7eb;
-            color: #111827;
-        }
-
-        .icon-key {
-            color: #f59e0b;
-        }
-
-        .icon-key:hover {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        .icon-trash {
-            color: #ef4444;
-        }
-
-        .icon-trash:hover {
-            background: #fee2e2;
-            color: #b91c1c;
+        /* FIX FOR INVISIBLE TEXT IN MODAL */
+        .modal-box input, 
+        .modal-box select {
+            color: #111827 !important; /* Forces dark text */
+            background-color: #ffffff !important; /* Ensures background is white */
         }
     </style>
 </head>
@@ -157,10 +138,7 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
             <a href="stock-location.php"><i class="bi bi-shop"></i> Stock by Location</a>
             <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
             <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
-
             <a href="staff.php" class="active"><i class="bi bi-people"></i> Staff Management</a>
-
-
             <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
             <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
@@ -199,41 +177,32 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
                         while ($row = mysqli_fetch_assoc($result)) {
                             $id = $row['user_id'];
                             $name = htmlspecialchars($row['username']);
-                            $raw_role = $row['role']; // Should be "Admin" or "Staff"
+                            $raw_role = $row['role']; 
 
-                            // Visuals
                             $role_display = ucfirst($raw_role);
-                            // Check 'Admin' (Capitalized) to match security gate
                             $role_class = ($raw_role === 'Admin') ? 'badge-role-admin' : 'badge-role-staff';
 
                             $avatar_letter = strtoupper(substr($name, 0, 1));
-                            $date = "Feb 17, 2026";
+                            $date = "Feb 17, 2026"; // You might want to pull this from DB later if you add a created_at column
 
                             echo "<tr>";
-                            // User Profile
                             echo "<td style='padding-left:30px;'>
                                     <div class='user-profile'>
                                         <div class='user-avatar'>$avatar_letter</div>
                                         <span class='user-name'>$name</span>
                                     </div>
                                   </td>";
-
-                            // Role Badge
                             echo "<td><span class='$role_class'>$role_display</span></td>";
                             echo "<td style='color:#6b7280; font-size:14px;'>$date</td>";
                             echo "<td><span class='status-active'>Active</span></td>";
-
-                            // Actions (Fixed Layout)
                             echo "<td style='text-align:right;'>
                                     <div class='action-group'>
                                         <button type='button' class='btn-icon icon-edit' onclick='editUser(\"$id\", \"$name\", \"$raw_role\")' title='Edit Details'>
                                             <i class='bi bi-pencil-square'></i>
                                         </button>
-                                        
                                         <button type='button' class='btn-icon icon-key' onclick='resetPass(\"$id\", \"$name\", \"$raw_role\")' title='Reset Password'>
                                             <i class='bi bi-key'></i>
                                         </button>
-
                                         <a href='staff.php?delete_id=$id' class='btn-icon icon-trash' onclick=\"return confirm('Delete this user?');\" title='Delete'>
                                             <i class='bi bi-trash'></i>
                                         </a>
@@ -303,7 +272,6 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
             saveBtn.innerText = "Update Details";
             idInput.value = id;
             nameInput.value = name;
-            // Match the capitalized value in Select
             roleInput.value = role;
 
             passLabel.innerText = "Change Password (Optional)";
