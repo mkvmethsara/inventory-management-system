@@ -28,19 +28,9 @@ if (isset($_POST['update_item_btn'])) {
     }
 }
 
-// --- 2. HANDLE DELETE ITEM ---
-if (isset($_GET['delete_id'])) {
-    $id = $_GET['delete_id'];
-    try {
-        if (mysqli_query($conn, "DELETE FROM items WHERE item_id = '$id'")) {
-            echo "<script>window.location.href='items-inventory.php';</script>";
-        }
-    } catch (Exception $e) {
-        echo "<script>alert('⚠️ Cannot delete: This item has transaction history.'); window.location.href='items-inventory.php';</script>";
-    }
-}
+// (DELETED THE HANDLE DELETE ITEM LOGIC - Master items should not be deleted to protect transaction history)
 
-// --- 3. HANDLE ADD ITEM ---
+// --- 2. HANDLE ADD ITEM ---
 if (isset($_POST['add_item_btn'])) {
     $name = mysqli_real_escape_string($conn, $_POST['item_name']);
     $code = mysqli_real_escape_string($conn, $_POST['item_code']);
@@ -50,7 +40,6 @@ if (isset($_POST['add_item_btn'])) {
     // Default Min Level
     $min  = 10;
 
-    // Removed the RFID insertion logic to keep the database clean
     $sql = "INSERT INTO items (item_name, item_code, category, supplier_id, minimum_level, created_at) 
             VALUES ('$name', '$code', '$cat', '$sup', '$min', NOW())";
 
@@ -61,7 +50,7 @@ if (isset($_POST['add_item_btn'])) {
     }
 }
 
-// --- 4. FETCH DATA ---
+// --- 3. FETCH DATA ---
 $items_res = mysqli_query($conn, "SELECT i.*, sp.supplier_name FROM items i LEFT JOIN suppliers sp ON i.supplier_id = sp.supplier_id ORDER BY i.item_id DESC");
 $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name ASC");
 ?>
@@ -74,6 +63,15 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
     <title>TrackFlow – Product Catalog</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css?v=21">
+    
+    <style>
+        /* FIX FOR INVISIBLE TEXT IN MODAL */
+        .modal-box input, 
+        .modal-box select {
+            color: #111827 !important; /* Forces dark text */
+            background-color: #ffffff !important; /* Ensures background is white */
+        }
+    </style>
 </head>
 
 <body class="trackflow-body">
@@ -84,16 +82,12 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
         </div>
         <nav class="tf-nav">
             <a href="dashboard.php"><i class="bi bi-grid-fill"></i> Dashboard</a>
-
             <a href="items-inventory.php" class="active"><i class="bi bi-box"></i> Items Inventory</a>
-
             <a href="batch-expiry.php"><i class="bi bi-clock-history"></i> Batch & Expiry</a>
             <a href="stock-location.php"><i class="bi bi-shop"></i> Stock by Location</a>
             <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
             <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
             <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
-
-
             <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
             <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
@@ -153,14 +147,10 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
                                        '<?php echo $row['category']; ?>', 
                                        '<?php echo $row['supplier_id']; ?>'
                                    )"
-                                    title="Edit" style="color:#4b5563; margin-right:15px;">
-                                    <i class="bi bi-pencil-square"></i>
+                                    title="Edit Details" style="color:#4b5563; display:inline-block; padding:8px; background:#f3f4f6; border-radius:6px; transition:0.2s;">
+                                    <i class="bi bi-pencil-square"></i> Edit
                                 </a>
-
-                                <a href="items-inventory.php?delete_id=<?php echo $row['item_id']; ?>" class="delete" title="Delete" onclick="return confirm('Delete this item?')" style="color:#ef4444;">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </td>
+                                </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
@@ -209,34 +199,29 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
     </div>
 
     <script>
-        // Modal & Search Logic
-
         function openModal() {
-            // Reset for "Add New"
             document.getElementById("modal_title").innerText = "Register New Item";
             document.getElementById("item_id_input").value = "";
             document.getElementById("item_name_input").value = "";
             document.getElementById("item_code_input").value = "";
-            document.getElementById("save_btn").name = "add_item_btn"; // Set PHP Action
+            document.getElementById("save_btn").name = "add_item_btn"; 
             document.getElementById("save_btn").innerText = "Save Item";
             document.getElementById("ADD_MODAL").style.display = "flex";
         }
 
         function openEditModal(id, name, code, cat, sup) {
-            // Pre-fill for "Edit"
             document.getElementById("modal_title").innerText = "Edit Item Details";
             document.getElementById("item_id_input").value = id;
             document.getElementById("item_name_input").value = name;
             document.getElementById("item_code_input").value = code;
 
-            // Set the category (safeguard in case an old category is clicked)
             let catDropdown = document.getElementById("category_input");
             let optionExists = Array.from(catDropdown.options).some(option => option.value === cat);
             catDropdown.value = optionExists ? cat : "Dry";
 
             document.getElementById("supplier_input").value = sup;
 
-            document.getElementById("save_btn").name = "update_item_btn"; // Set PHP Action
+            document.getElementById("save_btn").name = "update_item_btn"; 
             document.getElementById("save_btn").innerText = "Update Item";
             document.getElementById("ADD_MODAL").style.display = "flex";
         }
