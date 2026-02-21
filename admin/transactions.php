@@ -1,5 +1,7 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // SECURITY GATE 🔒
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
@@ -32,17 +34,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                    VALUES ('$t_date', '$item_id', '$batch_id', '$t_type', '$qty', '$user_id', '$loc_id')";
 
     if (mysqli_query($conn, $sql_insert)) {
-        
+
         // --- 2. UPDATE REAL STOCK LEVEL (Fixed Logic - No stock_id) ---
-        
+
         // Check if a record exists for this Item + Batch + Location
         // Removed 'stock_id' from SELECT
         $check_sql = "SELECT quantity FROM stock WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$loc_id'";
         $check_res = mysqli_query($conn, $check_sql);
-        
+
         // Error handling if query fails
         if (!$check_res) {
-             die("Database Error: " . mysqli_error($conn));
+            die("Database Error: " . mysqli_error($conn));
         }
 
         $stock_row = mysqli_fetch_assoc($check_res);
@@ -58,7 +60,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $b_val = (empty($batch_id)) ? "0" : "'$batch_id'";
                 mysqli_query($conn, "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', $b_val, '$loc_id', '$qty')");
             }
-
         } elseif ($t_type == 'OUT') {
             if ($stock_row) {
                 $current_qty = $stock_row['quantity'];
@@ -67,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($new_qty <= 0) {
                     // Option A: Delete row if 0 (Keeps table clean)
                     // mysqli_query($conn, "DELETE FROM stock WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$loc_id'");
-                    
+
                     // Option B: Keep row at 0 or negative (Better for tracking errors)
                     mysqli_query($conn, "UPDATE stock SET quantity='$new_qty' WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$loc_id'");
                 } else {
@@ -75,8 +76,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             } else {
                 // Creating a negative record if stock didn't exist (Rare case)
-                 $b_val = (empty($batch_id)) ? "0" : "'$batch_id'";
-                 mysqli_query($conn, "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', $b_val, '$loc_id', '-$qty')");
+                $b_val = (empty($batch_id)) ? "0" : "'$batch_id'";
+                mysqli_query($conn, "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', $b_val, '$loc_id', '-$qty')");
             }
         }
 
@@ -115,6 +116,7 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>TrackFlow – Transaction Logs</title>
@@ -134,7 +136,7 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
             <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
             <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
             <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
-            <div class="nav-label">ADMINISTRATION</div>
+
             <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
             <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
@@ -198,7 +200,7 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
                             $txn_id = "TXN-" . str_pad($row['transaction_id'], 4, '0', STR_PAD_LEFT);
                             $batch_val = $row['batch_id'];
                             $batch_display = ($batch_val && $batch_val != '0') ? "B" . $batch_val : "-";
-                            
+
                             $loc_display = $row['location_code'] ? $row['location_code'] : "Unknown";
                             $type = strtoupper($row['transaction_type']);
                             $qty = $row['quantity'];
@@ -252,7 +254,7 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
                 <select name="location_id" class="modal-input" required>
                     <option value="">-- Select Where Stock is Moving --</option>
                     <?php
-                    if(mysqli_num_rows($locs_dd) > 0) {
+                    if (mysqli_num_rows($locs_dd) > 0) {
                         mysqli_data_seek($locs_dd, 0); // Reset pointer
                         while ($l = mysqli_fetch_assoc($locs_dd)) {
                             // Using location_code only (since description is optional/unknown)
@@ -295,8 +297,13 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
     </div>
 
     <script>
-        function openTransModal() { document.getElementById("TRANS_LOG_MODAL_OVERLAY").style.display = "flex"; }
-        function closeTransModal() { document.getElementById("TRANS_LOG_MODAL_OVERLAY").style.display = "none"; }
+        function openTransModal() {
+            document.getElementById("TRANS_LOG_MODAL_OVERLAY").style.display = "flex";
+        }
+
+        function closeTransModal() {
+            document.getElementById("TRANS_LOG_MODAL_OVERLAY").style.display = "none";
+        }
         document.getElementById("searchInput").addEventListener("keyup", function() {
             let val = this.value.toLowerCase();
             document.querySelectorAll("#transTable tbody tr").forEach(row => {
@@ -305,4 +312,5 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
         });
     </script>
 </body>
+
 </html>
