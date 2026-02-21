@@ -1,5 +1,7 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // SECURITY GATE 🔒
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
@@ -22,13 +24,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // 1. Update Batch Details
         $sql_update = "UPDATE item_batches SET received_date='$received', expiry_date='$expiry' WHERE batch_id='$batch_id'";
         mysqli_query($conn, $sql_update);
-        
+
         // 2. Update Stock Quantity (Simple overwrite for this demo)
         $sql_stock = "UPDATE stock SET quantity='$qty' WHERE batch_id='$batch_id'";
         mysqli_query($conn, $sql_stock);
-        
-        echo "<script>alert('✅ Batch Updated!'); window.location.href='batch-expiry.php';</script>";
 
+        echo "<script>alert('✅ Batch Updated!'); window.location.href='batch-expiry.php';</script>";
     } else {
         // --- ADD NEW BATCH ---
         $sql_batch = "INSERT INTO item_batches (item_id, received_date, expiry_date) VALUES ('$item_id', '$received', '$expiry')";
@@ -66,6 +67,7 @@ $result = mysqli_query($conn, $sql);
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>TrackFlow – Batch Control</title>
@@ -75,28 +77,48 @@ $result = mysqli_query($conn, $sql);
     <style>
         /* DROPDOWN & MENU STYLES */
         .tf-search-select {
-            padding: 10px 16px; border: 1px solid #e5e7eb; border-radius: 8px;
-            background: white; color: #374151; font-size: 14px; font-weight: 600;
-            cursor: pointer; outline: none; min-width: 180px;
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            min-width: 180px;
         }
 
         /* The Container for the dots */
-        .menu-container { position: relative; display: inline-block; cursor: pointer; }
-        
+        .menu-container {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
         /* The Dots Icon */
         .menu-dots {
-            padding: 8px; border-radius: 50%; color: #9ca3af; transition: 0.2s;
+            padding: 8px;
+            border-radius: 50%;
+            color: #9ca3af;
+            transition: 0.2s;
         }
-        .menu-dots:hover { background: #f3f4f6; color: #374151; }
+
+        .menu-dots:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
 
         /* The Hidden Dropdown Menu */
         .dropdown-menu {
-            display: none; /* Hidden by default */
+            display: none;
+            /* Hidden by default */
             position: absolute;
-            right: 0; top: 30px;
+            right: 0;
+            top: 30px;
             background: white;
             min-width: 140px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             border-radius: 8px;
             border: 1px solid #f3f4f6;
             z-index: 100;
@@ -112,10 +134,20 @@ $result = mysqli_query($conn, $sql);
             transition: 0.2s;
             text-align: left;
         }
-        .dropdown-item:hover { background: #f9fafb; color: #4f46e5; }
-        .dropdown-item.delete-link:hover { background: #fee2e2; color: #dc2626; }
-        
-        .show-menu { display: block !important; }
+
+        .dropdown-item:hover {
+            background: #f9fafb;
+            color: #4f46e5;
+        }
+
+        .dropdown-item.delete-link:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .show-menu {
+            display: block !important;
+        }
     </style>
 </head>
 
@@ -131,7 +163,7 @@ $result = mysqli_query($conn, $sql);
             <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
             <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
             <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
-            <div class="nav-label">ADMINISTRATION</div>
+
             <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
             <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
@@ -166,9 +198,11 @@ $result = mysqli_query($conn, $sql);
                     $expiry_date = $row['expiry_date'];
                     $days_left = round((strtotime($expiry_date) - strtotime(date('Y-m-d'))) / 86400);
 
-                    $expiry_class = ""; $expiry_icon = ""; $status_tag = "valid";
+                    $expiry_class = "";
+                    $expiry_icon = "";
+                    $status_tag = "valid";
                     if ($days_left < 0) {
-                        $expiry_class = "expiry-danger"; 
+                        $expiry_class = "expiry-danger";
                         $expiry_icon = "<i class='bi bi-exclamation-triangle-fill'></i> ";
                         $status_tag = "expired";
                     } elseif ($days_left <= 90) {
@@ -176,7 +210,7 @@ $result = mysqli_query($conn, $sql);
                         $expiry_icon = "<i class='bi bi-clock-history'></i> ";
                         $status_tag = "expiring";
                     }
-                    
+
                     // Pre-paring Data for Edit
                     $b_id = $row['batch_id'];
                     $b_item = $row['item_id'];
@@ -289,12 +323,14 @@ $result = mysqli_query($conn, $sql);
             document.getElementById("qty_input").value = qty;
             document.getElementById("rec_input").value = rec;
             document.getElementById("exp_input").value = exp;
-            
+
             closeAllMenus(); // Hide the dots menu
             document.getElementById("batchModal").style.display = "flex";
         }
 
-        function closePopup() { document.getElementById("batchModal").style.display = "none"; }
+        function closePopup() {
+            document.getElementById("batchModal").style.display = "none";
+        }
 
         // 2. Dropdown Menu Logic
         function toggleMenu(menuId) {
@@ -326,4 +362,5 @@ $result = mysqli_query($conn, $sql);
         }
     </script>
 </body>
+
 </html>

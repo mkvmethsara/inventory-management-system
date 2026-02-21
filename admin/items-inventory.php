@@ -1,5 +1,7 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // SECURITY GATE 🔒
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
@@ -18,7 +20,7 @@ if (isset($_POST['update_item_btn'])) {
     $sup   = mysqli_real_escape_string($conn, $_POST['supplier_id']);
 
     $sql = "UPDATE items SET item_name='$name', item_code='$code', category='$cat', supplier_id='$sup' WHERE item_id='$id'";
-    
+
     if (mysqli_query($conn, $sql)) {
         echo "<script>alert('✅ Item Updated Successfully!'); window.location.href='items-inventory.php';</script>";
     } else {
@@ -44,7 +46,7 @@ if (isset($_POST['add_item_btn'])) {
     $code = mysqli_real_escape_string($conn, $_POST['item_code']);
     $cat  = $_POST['category'];
     $sup  = $_POST['supplier_id'];
-    
+
     // Default Min Level
     $min  = 10;
 
@@ -66,6 +68,7 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>TrackFlow – Product Catalog</title>
@@ -81,16 +84,16 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
         </div>
         <nav class="tf-nav">
             <a href="dashboard.php"><i class="bi bi-grid-fill"></i> Dashboard</a>
-            
+
             <a href="items-inventory.php" class="active"><i class="bi bi-box"></i> Items Inventory</a>
-            
+
             <a href="batch-expiry.php"><i class="bi bi-clock-history"></i> Batch & Expiry</a>
             <a href="stock-location.php"><i class="bi bi-shop"></i> Stock by Location</a>
             <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
             <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
             <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
-            
-            <div class="nav-label">ADMINISTRATION</div>
+
+
             <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
             <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
@@ -110,8 +113,8 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
 
         <div class="tf-table-container">
             <div style="padding: 20px; border-bottom: 1px solid #f3f4f6;">
-                <input type="text" id="searchInput" placeholder="Search items..." 
-                       style="padding: 10px 15px; width: 300px; border: 1px solid #e5e7eb; border-radius: 8px; background:#f9fafb; outline:none;">
+                <input type="text" id="searchInput" placeholder="Search items..."
+                    style="padding: 10px 15px; width: 300px; border: 1px solid #e5e7eb; border-radius: 8px; background:#f9fafb; outline:none;">
             </div>
 
             <table class="tf-table" id="itemTable">
@@ -140,20 +143,20 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
                             </td>
                             <td style="font-weight:700;"><?php echo $row['minimum_level']; ?></td>
                             <td style="color:#6b7280;"><?php echo htmlspecialchars($row['supplier_name'] ?? 'Unknown'); ?></td>
-                            
+
                             <td class="action-icons" style="text-align:right">
-                                <a href="javascript:void(0)" 
-                                   onclick="openEditModal(
+                                <a href="javascript:void(0)"
+                                    onclick="openEditModal(
                                        '<?php echo $row['item_id']; ?>', 
                                        '<?php echo addslashes($row['item_name']); ?>', 
                                        '<?php echo $row['item_code']; ?>', 
                                        '<?php echo $row['category']; ?>', 
                                        '<?php echo $row['supplier_id']; ?>'
-                                   )" 
-                                   title="Edit" style="color:#4b5563; margin-right:15px;">
+                                   )"
+                                    title="Edit" style="color:#4b5563; margin-right:15px;">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                
+
                                 <a href="items-inventory.php?delete_id=<?php echo $row['item_id']; ?>" class="delete" title="Delete" onclick="return confirm('Delete this item?')" style="color:#ef4444;">
                                     <i class="bi bi-trash"></i>
                                 </a>
@@ -169,7 +172,7 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
     <div id="ADD_MODAL" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modal_title" style="margin-top:0; margin-bottom:20px;">Register New Item</h3>
-            
+
             <form method="POST">
                 <input type="hidden" name="item_id" id="item_id_input">
 
@@ -207,7 +210,7 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
 
     <script>
         // Modal & Search Logic
-        
+
         function openModal() {
             // Reset for "Add New"
             document.getElementById("modal_title").innerText = "Register New Item";
@@ -225,14 +228,14 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
             document.getElementById("item_id_input").value = id;
             document.getElementById("item_name_input").value = name;
             document.getElementById("item_code_input").value = code;
-            
+
             // Set the category (safeguard in case an old category is clicked)
             let catDropdown = document.getElementById("category_input");
             let optionExists = Array.from(catDropdown.options).some(option => option.value === cat);
             catDropdown.value = optionExists ? cat : "Dry";
-            
+
             document.getElementById("supplier_input").value = sup;
-            
+
             document.getElementById("save_btn").name = "update_item_btn"; // Set PHP Action
             document.getElementById("save_btn").innerText = "Update Item";
             document.getElementById("ADD_MODAL").style.display = "flex";
@@ -241,7 +244,7 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
         function closeModal() {
             document.getElementById("ADD_MODAL").style.display = "none";
         }
-        
+
         window.onclick = function(e) {
             if (e.target == document.getElementById("ADD_MODAL")) closeModal();
         }
@@ -254,4 +257,5 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
         });
     </script>
 </body>
+
 </html>
