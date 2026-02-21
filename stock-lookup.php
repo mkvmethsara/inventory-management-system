@@ -20,9 +20,14 @@ if (isset($_POST['qr_code'])) {
     if (filter_var($code, FILTER_VALIDATE_URL)) {
         $error_msg = "⚠️ You scanned a Website Link! Please use a Text-Only QR.";
     } else {
-        // A. Find the Item
-        $sql_item = "SELECT * FROM items WHERE item_code = '$code' OR rfid_tag_id = '$code'";
+        // A. Find the Item (FIXED: Removed rfid_tag_id)
+        $sql_item = "SELECT * FROM items WHERE item_code = '$code'";
         $result_item = mysqli_query($conn, $sql_item);
+
+        // Safety check to prevent fatal crashes
+        if (!$result_item) {
+            die("<div style='padding:20px; color:red; text-align:center;'><b>Database Error:</b> " . mysqli_error($conn) . "</div>");
+        }
 
         if (mysqli_num_rows($result_item) > 0) {
             $scanned_item = mysqli_fetch_assoc($result_item);
@@ -60,127 +65,20 @@ if (isset($_POST['qr_code'])) {
 
     <style>
         /* Modern Card Styles */
-        .result-card {
-            background: white;
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
-
-        .item-name {
-            font-size: 22px;
-            font-weight: 800;
-            color: #1f2937;
-            margin: 5px 0;
-        }
-
-        .item-code {
-            background: #f3f4f6;
-            color: #6b7280;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: monospace;
-            display: inline-block;
-        }
-
-        /* Single Big Stat Box */
-        .stat-box {
-            background: #f0fdf4;
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid #bbf7d0;
-            margin: 20px 0;
-        }
-
-        .stat-val {
-            font-size: 40px;
-            font-weight: 800;
-            color: #166534;
-        }
-
-        .stat-lbl {
-            font-size: 13px;
-            text-transform: uppercase;
-            color: #15803d;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        /* Table */
-        .stock-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        .stock-table th {
-            text-align: left;
-            color: #9ca3af;
-            font-size: 11px;
-            text-transform: uppercase;
-            border-bottom: 2px solid #f3f4f6;
-            padding-bottom: 8px;
-        }
-
-        .stock-table td {
-            padding: 12px 0;
-            border-bottom: 1px solid #f9fafb;
-            font-size: 14px;
-            color: #374151;
-        }
-
-        .loc-badge {
-            background: #e0e7ff;
-            color: #4338ca;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 12px;
-        }
-
-        /* Scanner */
-        .scanner-container {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .scanner-wrapper {
-            width: 100%;
-            max-width: 300px;
-            height: 300px;
-            background: #000;
-            margin: 0 auto 20px auto;
-            border-radius: 12px;
-            display: none;
-            overflow: hidden;
-        }
-
-        .btn-scan {
-            background: #4f46e5;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-rescan {
-            display: block;
-            width: 100%;
-            background: #f3f4f6;
-            color: #374151;
-            padding: 15px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 20px;
-        }
+        .result-card { background: white; max-width: 500px; margin: 20px auto; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); text-align: center; }
+        .item-name { font-size: 22px; font-weight: 800; color: #1f2937; margin: 5px 0; }
+        .item-code { background: #f3f4f6; color: #6b7280; padding: 4px 10px; border-radius: 6px; font-size: 14px; font-family: monospace; display: inline-block; }
+        .stat-box { background: #f0fdf4; padding: 20px; border-radius: 16px; border: 1px solid #bbf7d0; margin: 20px 0; }
+        .stat-val { font-size: 40px; font-weight: 800; color: #166534; }
+        .stat-lbl { font-size: 13px; text-transform: uppercase; color: #15803d; font-weight: 700; letter-spacing: 1px; }
+        .stock-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .stock-table th { text-align: left; color: #9ca3af; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #f3f4f6; padding-bottom: 8px; }
+        .stock-table td { padding: 12px 0; border-bottom: 1px solid #f9fafb; font-size: 14px; color: #374151; }
+        .loc-badge { background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 12px; }
+        .scanner-container { text-align: center; margin-top: 20px; }
+        .scanner-wrapper { width: 100%; max-width: 300px; height: 300px; background: #000; margin: 0 auto 20px auto; border-radius: 12px; display: none; overflow: hidden; }
+        .btn-scan { background: #4f46e5; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-rescan { display: block; width: 100%; background: #f3f4f6; color: #374151; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 
@@ -277,57 +175,16 @@ if (isset($_POST['qr_code'])) {
             document.getElementById("scannerBox").style.display = "block";
             document.getElementById("scanBtn").style.display = "none";
             const html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({
-                    facingMode: "environment"
-                }, {
-                    fps: 10,
-                    qrbox: {
-                        width: 250,
-                        height: 250
-                    }
-                },
-                (decodedText) => {
-                    html5QrCode.stop();
-                    document.getElementById("hiddenCode").value = decodedText;
-                    document.getElementById("scanForm").submit();
-                },
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => { html5QrCode.stop(); document.getElementById("hiddenCode").value = decodedText; document.getElementById("scanForm").submit(); },
                 (errorMessage) => {}
-            ).catch(err => {
-                alert("Camera Error: " + err);
-                document.getElementById("scannerBox").style.display = "none";
-                document.getElementById("scanBtn").style.display = "block";
-            });
+            ).catch(err => { alert("Camera Error: " + err); document.getElementById("scannerBox").style.display = "none"; document.getElementById("scanBtn").style.display = "block"; });
         }
     </script>
     <style>
-        .float-home-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #1e1b4b;
-            /* Matches your dashboard header color */
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            text-decoration: none;
-            font-size: 24px;
-            z-index: 9999;
-            transition: transform 0.2s;
-        }
-
-        .float-home-btn:hover {
-            transform: scale(1.1);
-            background: #312e81;
-        }
+        .float-home-btn { position: fixed; bottom: 20px; right: 20px; background: #1e1b4b; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); text-decoration: none; font-size: 24px; z-index: 9999; transition: transform 0.2s; }
+        .float-home-btn:hover { transform: scale(1.1); background: #312e81; }
     </style>
-
     <a href="staff_dashboard.php" class="float-home-btn" title="Back to Dashboard">🏠</a>
-
 </body>
-
 </html>
