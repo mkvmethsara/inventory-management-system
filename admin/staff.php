@@ -1,5 +1,7 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // SECURITY GATE 🔒
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
@@ -76,12 +78,13 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>TrackFlow – Staff Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css?v=35">
-    
+
     <style>
         /* FIX FOR MESSY UI BUTTONS */
         .action-group {
@@ -90,7 +93,7 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
             justify-content: flex-end;
             align-items: center;
         }
-        
+
         /* Clean Icon Buttons instead of Big Text Buttons */
         .btn-icon {
             border: none;
@@ -103,18 +106,41 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
             justify-content: center;
             cursor: pointer;
             transition: 0.2s;
-            text-decoration: none; /* For the <a> tag */
+            text-decoration: none;
+            /* For the <a> tag */
         }
-        .btn-icon:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        
-        .icon-edit { color: #4b5563; }
-        .icon-edit:hover { background: #e5e7eb; color: #111827; }
-        
-        .icon-key { color: #f59e0b; }
-        .icon-key:hover { background: #fef3c7; color: #d97706; }
-        
-        .icon-trash { color: #ef4444; }
-        .icon-trash:hover { background: #fee2e2; color: #b91c1c; }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-edit {
+            color: #4b5563;
+        }
+
+        .icon-edit:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .icon-key {
+            color: #f59e0b;
+        }
+
+        .icon-key:hover {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .icon-trash {
+            color: #ef4444;
+        }
+
+        .icon-trash:hover {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
     </style>
 </head>
 
@@ -131,10 +157,10 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
             <a href="stock-location.php"><i class="bi bi-shop"></i> Stock by Location</a>
             <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
             <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
-            
+
             <a href="staff.php" class="active"><i class="bi bi-people"></i> Staff Management</a>
-            
-            <div class="nav-label">ADMINISTRATION</div>
+
+
             <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
             <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
@@ -153,8 +179,8 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
 
         <div class="tf-table-container">
             <div style="padding: 20px; border-bottom: 1px solid #f3f4f6;">
-                <input type="text" id="searchInput" placeholder="Search staff..." 
-                       style="padding: 10px 15px; width: 300px; border: 1px solid #e5e7eb; border-radius: 8px; background:#f9fafb; outline:none;">
+                <input type="text" id="searchInput" placeholder="Search staff..."
+                    style="padding: 10px 15px; width: 300px; border: 1px solid #e5e7eb; border-radius: 8px; background:#f9fafb; outline:none;">
             </div>
 
             <table class="tf-table" id="userTable">
@@ -168,20 +194,20 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
                     </tr>
                 </thead>
                 <tbody>
-                    <?php 
+                    <?php
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) {
                             $id = $row['user_id'];
                             $name = htmlspecialchars($row['username']);
                             $raw_role = $row['role']; // Should be "Admin" or "Staff"
-                            
+
                             // Visuals
                             $role_display = ucfirst($raw_role);
                             // Check 'Admin' (Capitalized) to match security gate
                             $role_class = ($raw_role === 'Admin') ? 'badge-role-admin' : 'badge-role-staff';
-                            
+
                             $avatar_letter = strtoupper(substr($name, 0, 1));
-                            $date = "Feb 17, 2026"; 
+                            $date = "Feb 17, 2026";
 
                             echo "<tr>";
                             // User Profile
@@ -191,12 +217,12 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
                                         <span class='user-name'>$name</span>
                                     </div>
                                   </td>";
-                            
+
                             // Role Badge
                             echo "<td><span class='$role_class'>$role_display</span></td>";
                             echo "<td style='color:#6b7280; font-size:14px;'>$date</td>";
                             echo "<td><span class='status-active'>Active</span></td>";
-                            
+
                             // Actions (Fixed Layout)
                             echo "<td style='text-align:right;'>
                                     <div class='action-group'>
@@ -227,7 +253,7 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
     <div id="USER_MODAL" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle" style="margin-top:0; margin-bottom:20px;">Add New Staff</h3>
-            
+
             <form method="POST">
                 <input type="hidden" name="user_id" id="user_id_input">
 
@@ -278,16 +304,16 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
             idInput.value = id;
             nameInput.value = name;
             // Match the capitalized value in Select
-            roleInput.value = role; 
-            
+            roleInput.value = role;
+
             passLabel.innerText = "Change Password (Optional)";
             passInput.placeholder = "Leave blank to keep current";
-            passInput.required = false; 
+            passInput.required = false;
             passInput.value = "";
-            
+
             modal.style.display = "flex";
         }
-        
+
         function resetPass(id, name, role) {
             title.innerText = "Reset Password for " + name;
             saveBtn.innerText = "Save New Password";
@@ -297,16 +323,20 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
 
             passLabel.innerText = "New Password";
             passInput.placeholder = "Enter new password";
-            passInput.required = true; 
+            passInput.required = true;
             passInput.value = "";
             passInput.focus();
-            
+
             modal.style.display = "flex";
         }
 
-        function closeModal() { modal.style.display = "none"; }
-        window.onclick = function(e) { if(e.target == modal) closeModal(); }
-        
+        function closeModal() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(e) {
+            if (e.target == modal) closeModal();
+        }
+
         document.getElementById("searchInput").addEventListener("keyup", function() {
             let val = this.value.toLowerCase();
             document.querySelectorAll("#userTable tbody tr").forEach(row => {
@@ -315,4 +345,5 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
         });
     </script>
 </body>
+
 </html>
