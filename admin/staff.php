@@ -108,19 +108,45 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
             text-decoration: none;
         }
 
-        .btn-icon:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-        .icon-edit { color: #4b5563; }
-        .icon-edit:hover { background: #e5e7eb; color: #111827; }
-        .icon-key { color: #f59e0b; }
-        .icon-key:hover { background: #fef3c7; color: #d97706; }
-        .icon-trash { color: #ef4444; }
-        .icon-trash:hover { background: #fee2e2; color: #b91c1c; }
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-edit {
+            color: #4b5563;
+        }
+
+        .icon-edit:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .icon-key {
+            color: #f59e0b;
+        }
+
+        .icon-key:hover {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .icon-trash {
+            color: #ef4444;
+        }
+
+        .icon-trash:hover {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
 
         /* FIX FOR INVISIBLE TEXT IN MODAL */
-        .modal-box input, 
+        .modal-box input,
         .modal-box select {
-            color: #111827 !important; /* Forces dark text */
-            background-color: #ffffff !important; /* Ensures background is white */
+            color: #111827 !important;
+            /* Forces dark text */
+            background-color: #ffffff !important;
+            /* Ensures background is white */
         }
     </style>
 </head>
@@ -177,13 +203,15 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
                         while ($row = mysqli_fetch_assoc($result)) {
                             $id = $row['user_id'];
                             $name = htmlspecialchars($row['username']);
-                            $raw_role = $row['role']; 
+                            $raw_role = $row['role'];
 
                             $role_display = ucfirst($raw_role);
                             $role_class = ($raw_role === 'Admin') ? 'badge-role-admin' : 'badge-role-staff';
 
                             $avatar_letter = strtoupper(substr($name, 0, 1));
-                            $date = "Feb 17, 2026"; // You might want to pull this from DB later if you add a created_at column
+
+                            // NEW: Dynamic Date Fetching!
+                            $date = isset($row['created_at']) ? date('M d, Y', strtotime($row['created_at'])) : 'N/A';
 
                             echo "<tr>";
                             echo "<td style='padding-left:30px;'>
@@ -236,7 +264,7 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
                 </select>
 
                 <label style="font-size:13px; font-weight:600; color:#6b7280;" id="passLabel">Password</label>
-                <input type="text" name="password" id="password_input" placeholder="Enter password" required>
+                <input type="password" name="password" id="password_input" placeholder="Enter password" required>
 
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                     <button type="button" onclick="closeModal()" class="btn-cancel" style="background:transparent; border:1px solid #e5e7eb; color:#374151;">Cancel</button>

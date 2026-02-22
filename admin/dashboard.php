@@ -27,6 +27,16 @@ $today_scans = 0;
 $q3 = mysqli_query($conn, "SELECT COUNT(*) as count FROM stock_transactions WHERE DATE(transaction_time) = '$today'");
 if ($q3) $today_scans = mysqli_fetch_assoc($q3)['count'];
 
+// --- NEW: Fix 3 - Near Expiry Stat (Live Query) ---
+$near_expiry = 0;
+$q4 = mysqli_query(
+    $conn,
+    "SELECT COUNT(*) as count FROM item_batches 
+     WHERE expiry_date BETWEEN CURDATE() 
+     AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)"
+);
+if ($q4) $near_expiry = mysqli_fetch_assoc($q4)['count'];
+
 // --- NEW: Fetch Total Stock per Item ---
 $stock_summary_query = "SELECT i.item_name, i.item_code, COALESCE(SUM(s.quantity), 0) as total_qty 
                         FROM items i 
@@ -103,7 +113,7 @@ $trans_result = mysqli_query($conn, $trans_query);
                     <span style="background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 700;">ALERT</span>
                 </div>
                 <p style="color: #6b7280; font-size: 14px; margin: 0; font-weight: 500;">Near Expiry</p>
-                <h3 style="font-size: 28px; margin: 5px 0 0 0; color: #111827;">0</h3>
+                <h3 style="font-size: 28px; margin: 5px 0 0 0; color: #111827;"><?php echo number_format($near_expiry); ?></h3>
             </div>
 
             <div class="tf-table-container" style="padding: 24px;">
@@ -117,7 +127,7 @@ $trans_result = mysqli_query($conn, $trans_query);
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            
+
             <div class="tf-table-container">
                 <div class="tf-page-header" style="padding: 20px; margin: 0; border-bottom: 1px solid #e5e7eb;">
                     <h4 style="margin:0; font-size:16px;">Current Stock Levels</h4>
@@ -143,8 +153,10 @@ $trans_result = mysqli_query($conn, $trans_query);
                                 </td>
                             </tr>
                         <?php endwhile; ?>
-                        <?php if(mysqli_num_rows($stock_summary_result) == 0): ?>
-                            <tr><td colspan="2" style="text-align:center; padding:30px; color:#9ca3af;">No stock available</td></tr>
+                        <?php if (mysqli_num_rows($stock_summary_result) == 0): ?>
+                            <tr>
+                                <td colspan="2" style="text-align:center; padding:30px; color:#9ca3af;">No stock available</td>
+                            </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -179,8 +191,10 @@ $trans_result = mysqli_query($conn, $trans_query);
                                 </td>
                             </tr>
                         <?php endwhile; ?>
-                        <?php if(mysqli_num_rows($trans_result) == 0): ?>
-                            <tr><td colspan="4" style="text-align:center; padding:30px; color:#9ca3af;">No recent transactions</td></tr>
+                        <?php if (mysqli_num_rows($trans_result) == 0): ?>
+                            <tr>
+                                <td colspan="4" style="text-align:center; padding:30px; color:#9ca3af;">No recent transactions</td>
+                            </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>

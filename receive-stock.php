@@ -20,13 +20,13 @@ if (isset($_POST['save_stock'])) {
     $total_quantity = (int)$_POST['quantity'];
     $expiry_date = $_POST['expiry_date'];
     $received_date = date('Y-m-d');
-    
+
     // Get the Starting Column and Bin entered by the staff
     $current_col = (int)$_POST['col'];
     $current_bin = (int)$_POST['bin'];
 
     // 🔴 WAREHOUSE SETTINGS (Change this number to whatever capacity you want)
-    $BIN_CAPACITY = 500; 
+    $BIN_CAPACITY = 500;
 
     // Find out if the item is a Drink or Dry
     $item_q = mysqli_query($conn, "SELECT category FROM items WHERE item_id='$item_id'");
@@ -36,20 +36,24 @@ if (isset($_POST['save_stock'])) {
 
     // STEP A: Create a brand new Batch FIRST
     $insert_batch = "INSERT INTO item_batches (item_id, received_date, expiry_date) VALUES ('$item_id', '$received_date', '$expiry_date')";
-    
+
     if (mysqli_query($conn, $insert_batch)) {
         $new_batch_id = mysqli_insert_id($conn);
         $remaining_qty = $total_quantity;
         $messages_array = []; // To store our success messages
 
         // --- AUTO-MAGIC SPILL-OVER LOGIC ---
+        $loop_limit = 0; // ADD THIS LINE (Infinite loop protection)
+
         while ($remaining_qty > 0) {
-            
+            $loop_limit++; // ADD THIS LINE
+            if ($loop_limit > 500) break; // ADD THIS LINE
+
             // Format current location code (e.g. 1-05-12)
             $col_str = str_pad($current_col, 2, '0', STR_PAD_LEFT);
             $bin_str = str_pad($current_bin, 2, '0', STR_PAD_LEFT);
             $loc_code = "$prefix-$col_str-$bin_str";
-            
+
             // 1. Check if this Location already exists, or create it
             $loc_q = mysqli_query($conn, "SELECT location_id FROM locations WHERE location_code='$loc_code'");
             if (mysqli_num_rows($loc_q) > 0) {
@@ -66,7 +70,7 @@ if (isset($_POST['save_stock'])) {
             $cap_q = mysqli_query($conn, "SELECT COALESCE(SUM(quantity), 0) as used_qty FROM stock WHERE location_id='$location_id'");
             $cap_row = mysqli_fetch_assoc($cap_q);
             $used_qty = (int)$cap_row['used_qty'];
-            
+
             $available_space = $BIN_CAPACITY - $used_qty;
 
             // 3. If bin is completely full, jump to the next bin and try again
@@ -106,8 +110,10 @@ if (isset($_POST['save_stock'])) {
 
         // Display the final instructions
         $message = "✅ <b>Success! Stock split automatically:</b><br><br>" . implode("<br>", $messages_array);
+        if ($remaining_qty > 0) {
+            $message .= "<br><br><span style='color:#dc2626;'>⚠️ <b>Warning:</b> Ran out of warehouse space! $remaining_qty items were not stored.</span>";
+        }
         $message_type = "success";
-        
     } else {
         $message = "❌ Database Error: " . mysqli_error($conn);
         $message_type = "error";
@@ -149,17 +155,108 @@ if (isset($_POST['qr_code'])) {
     <link rel="stylesheet" href="assets/css/staff_style.css">
 
     <style>
-        .scanner-container { text-align: center; margin-top: 20px; }
-        .scanner-wrapper { width: 100%; max-width: 300px; height: 300px; background: #000; margin: 0 auto 20px auto; border-radius: 12px; overflow: hidden; position: relative; display: none; border: 4px solid #4f46e5; }
-        .btn-start-scan { background: #4f46e5; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); display: inline-block; }
-        .btn-start-scan:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6); }
-        .alert-box { padding: 15px; margin-bottom: 20px; border-radius: 12px; font-weight: normal; text-align: left; line-height:1.5; }
-        .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; text-align:center; font-weight:bold; }
-        .result-card { background: white; max-width: 450px; margin: 20px auto; padding: 30px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); text-align: center; }
-        .modern-select, .modern-input { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-        .btn-confirm { width: 100%; background: #10b981; color: white; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .badge-success { background: #dcfce7; color: #166534; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        .scanner-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .scanner-wrapper {
+            width: 100%;
+            max-width: 300px;
+            height: 300px;
+            background: #000;
+            margin: 0 auto 20px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            display: none;
+            border: 4px solid #4f46e5;
+        }
+
+        .btn-start-scan {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+            display: inline-block;
+        }
+
+        .btn-start-scan:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
+        }
+
+        .alert-box {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            font-weight: normal;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .result-card {
+            background: white;
+            max-width: 450px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .modern-select,
+        .modern-input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .btn-confirm {
+            width: 100%;
+            background: #10b981;
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
