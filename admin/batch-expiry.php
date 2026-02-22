@@ -180,6 +180,7 @@ $result = mysqli_query($conn, $sql);
                     <option value="all">Show All Batches</option>
                     <option value="expiring">⚠️ Nearly Expire (90 Days)</option>
                     <option value="expired">⛔ Expired Items</option>
+                    <option value="lowstock">📉 Low Stock (&lt; 20 items)</option>
                 </select>
                 <button onclick="openPopup()" class="tf-btn-primary">
                     <i class="bi bi-plus-lg"></i> Add Manual Batch
@@ -218,8 +219,9 @@ $result = mysqli_query($conn, $sql);
                     $b_rec = $row['received_date'];
                     $b_exp = $row['expiry_date'];
 
+                    // Notice the new data-qty attribute added here for JS filtering
                     echo '
-                    <div class="tf-batch-card" data-status="' . $status_tag . '">
+                    <div class="tf-batch-card" data-status="' . $status_tag . '" data-qty="' . $b_qty . '">
                         <div class="batch-left">
                             <div class="batch-icon ' . $icon_color . '"><i class="bi bi-box-seam"></i></div>
                             <div class="batch-info">
@@ -353,11 +355,23 @@ $result = mysqli_query($conn, $sql);
             if (!event.target.matches('.menu-dots')) closeAllMenus();
         }
 
-        // 3. Filter Logic
+        // 3. Filter Logic (Upgraded for Low Stock)
         function filterBatches() {
             const filterValue = document.getElementById('statusFilter').value;
+
             document.querySelectorAll('.tf-batch-card').forEach(row => {
-                row.style.display = (filterValue === 'all' || filterValue === row.getAttribute('data-status')) ? "flex" : "none";
+                let status = row.getAttribute('data-status');
+                let qty = parseInt(row.getAttribute('data-qty'));
+
+                if (filterValue === 'all') {
+                    row.style.display = "flex";
+                } else if (filterValue === 'lowstock') {
+                    // Check if quantity is less than 20
+                    row.style.display = (qty < 20) ? "flex" : "none";
+                } else {
+                    // Normal check for 'expired' or 'expiring'
+                    row.style.display = (filterValue === status) ? "flex" : "none";
+                }
             });
         }
     </script>
