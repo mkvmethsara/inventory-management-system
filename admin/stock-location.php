@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role
 
 include '../config/db.php';
 
-// --- 1. HANDLE MOVE STOCK (Updated for your DB) ---
+// --- 1. HANDLE MOVE STOCK (With Capacity Limits) ---
 if (isset($_POST['move_stock_btn'])) {
     $item_id   = $_POST['item_id'];
     $batch_id  = $_POST['batch_id'];
@@ -29,8 +29,7 @@ if (isset($_POST['move_stock_btn'])) {
         exit();
     }
 
-    // A. Handle Batch Logic (Your DB allows NULL or '0' for no batch)
-    // We build a SQL snippet to check batch_id safely
+    // A. Handle Batch Logic
     $batch_sql_check = (empty($batch_id) || $batch_id == '0') ? "(batch_id IS NULL OR batch_id = '0')" : "batch_id = '$batch_id'";
 
     // B. Check Source Quantity
@@ -42,6 +41,20 @@ if (isset($_POST['move_stock_btn'])) {
         echo "<script>alert('❌ Error: Not enough stock available to move!'); window.location.href='stock-location.php';</script>";
         exit();
     }
+
+    // --- NEW: DESTINATION CAPACITY CHECK (MAX 500 ITEMS PER BIN) ---
+    $capacity_check_sql = mysqli_query($conn, "SELECT SUM(quantity) as total_bin_qty FROM stock WHERE location_id='$new_loc'");
+    $capacity_row = mysqli_fetch_assoc($capacity_check_sql);
+    $current_bin_qty = $capacity_row['total_bin_qty'] ? (int)$capacity_row['total_bin_qty'] : 0;
+
+    $max_capacity = 500;
+    $available_space = $max_capacity - $current_bin_qty;
+
+    if ($move_qty > $available_space) {
+        echo "<script>alert('❌ CAPACITY ERROR!\\n\\nThis bin can only hold $max_capacity items.\\nCurrently inside: $current_bin_qty\\nAvailable space: $available_space\\n\\nYou cannot move $move_qty items here.'); window.location.href='stock-location.php';</script>";
+        exit();
+    }
+    // ---------------------------------------------------------------
 
     // --- C. EXECUTE MOVE ---
 
@@ -56,7 +69,6 @@ if (isset($_POST['move_stock_btn'])) {
     }
 
     // 2. Increase Destination (New Location)
-    // Check if stock already exists in the new location
     $dest_sql = "SELECT quantity FROM stock WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$new_loc'";
     $check_dest = mysqli_query($conn, $dest_sql);
     $dest_row = mysqli_fetch_assoc($check_dest);
@@ -67,10 +79,13 @@ if (isset($_POST['move_stock_btn'])) {
         mysqli_query($conn, "UPDATE stock SET quantity='$new_dest_qty' WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$new_loc'");
     } else {
         // Insert new record
-        // Use '0' or NULL for batch_id depending on how you store empty batches. Assuming '0' or ID from POST.
         $b_val = (empty($batch_id)) ? "0" : "'$batch_id'";
         mysqli_query($conn, "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', $b_val, '$new_loc', '$move_qty')");
     }
+
+    // 3. Log the Transaction
+    mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
+                         VALUES ('$item_id', '$batch_id', '$new_loc', '" . $_SESSION['user_id'] . "', 'MOVE', '$move_qty', NOW(), 'FROM LOC $old_loc')");
 
     echo "<script>alert('✅ Successfully moved $move_qty items!'); window.location.href='stock-location.php';</script>";
 }
@@ -85,7 +100,6 @@ if ($filter_loc !== 'all') {
 }
 
 // --- FETCH STOCK DATA ---
-// We select columns explicitly. No stock_id needed.
 $sql = "SELECT 
             s.item_id, 
             s.batch_id, 
