@@ -11,12 +11,12 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role
 
 include '../config/db.php';
 
-// --- 1. HANDLE MOVE STOCK (With Capacity Limits) ---
+// --- 1. HANDLE MOVE OR DISPATCH STOCK ---
 if (isset($_POST['move_stock_btn'])) {
     $item_id   = $_POST['item_id'];
     $batch_id  = $_POST['batch_id'];
     $old_loc   = $_POST['old_location_id'];
-    $new_loc   = $_POST['new_location_id'];
+    $new_loc   = $_POST['new_location_id']; // This can be an ID or 'OUT'
     $move_qty  = (int)$_POST['move_quantity'];
 
     // Validation
@@ -38,56 +38,71 @@ if (isset($_POST['move_stock_btn'])) {
     $source_row = mysqli_fetch_assoc($check_source);
 
     if (!$source_row || $source_row['quantity'] < $move_qty) {
-        echo "<script>alert('❌ Error: Not enough stock available to move!'); window.location.href='stock-location.php';</script>";
+        echo "<script>alert('❌ Error: Not enough stock available!'); window.location.href='stock-location.php';</script>";
         exit();
     }
 
-    // --- NEW: DESTINATION CAPACITY CHECK (MAX 500 ITEMS PER BIN) ---
-    $capacity_check_sql = mysqli_query($conn, "SELECT SUM(quantity) as total_bin_qty FROM stock WHERE location_id='$new_loc'");
-    $capacity_row = mysqli_fetch_assoc($capacity_check_sql);
-    $current_bin_qty = $capacity_row['total_bin_qty'] ? (int)$capacity_row['total_bin_qty'] : 0;
+    // --- C. CHECK IF DISPATCHING OR MOVING ---
+    if ($new_loc === 'OUT') {
 
-    $max_capacity = 500;
-    $available_space = $max_capacity - $current_bin_qty;
+        // --- 🚪 DISPATCH (STOCK OUT) LOGIC ---
+        $new_source_qty = $source_row['quantity'] - $move_qty;
 
-    if ($move_qty > $available_space) {
-        echo "<script>alert('❌ CAPACITY ERROR!\\n\\nThis bin can only hold $max_capacity items.\\nCurrently inside: $current_bin_qty\\nAvailable space: $available_space\\n\\nYou cannot move $move_qty items here.'); window.location.href='stock-location.php';</script>";
+        if ($new_source_qty == 0) {
+            mysqli_query($conn, "DELETE FROM stock WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$old_loc'");
+        } else {
+            mysqli_query($conn, "UPDATE stock SET quantity='$new_source_qty' WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$old_loc'");
+        }
+
+        // Log as OUT transaction
+        mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
+                             VALUES ('$item_id', '$batch_id', '$old_loc', '" . $_SESSION['user_id'] . "', 'OUT', '$move_qty', NOW(), 'ADMIN DISPATCH')");
+
+        echo "<script>alert('✅ Successfully Dispatched $move_qty items from the warehouse!'); window.location.href='stock-location.php';</script>";
+        exit();
+    } else {
+
+        // --- 🚚 NORMAL MOVE LOGIC (With Capacity Check) ---
+        $capacity_check_sql = mysqli_query($conn, "SELECT SUM(quantity) as total_bin_qty FROM stock WHERE location_id='$new_loc'");
+        $capacity_row = mysqli_fetch_assoc($capacity_check_sql);
+        $current_bin_qty = $capacity_row['total_bin_qty'] ? (int)$capacity_row['total_bin_qty'] : 0;
+
+        $max_capacity = 500;
+        $available_space = $max_capacity - $current_bin_qty;
+
+        if ($move_qty > $available_space) {
+            echo "<script>alert('❌ CAPACITY ERROR!\\n\\nThis bin can only hold $max_capacity items.\\nCurrently inside: $current_bin_qty\\nAvailable space: $available_space\\n\\nYou cannot move $move_qty items here.'); window.location.href='stock-location.php';</script>";
+            exit();
+        }
+
+        // 1. Decrease Source (Old Location)
+        $new_source_qty = $source_row['quantity'] - $move_qty;
+        if ($new_source_qty == 0) {
+            mysqli_query($conn, "DELETE FROM stock WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$old_loc'");
+        } else {
+            mysqli_query($conn, "UPDATE stock SET quantity='$new_source_qty' WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$old_loc'");
+        }
+
+        // 2. Increase Destination (New Location)
+        $dest_sql = "SELECT quantity FROM stock WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$new_loc'";
+        $check_dest = mysqli_query($conn, $dest_sql);
+        $dest_row = mysqli_fetch_assoc($check_dest);
+
+        if ($dest_row) {
+            $new_dest_qty = $dest_row['quantity'] + $move_qty;
+            mysqli_query($conn, "UPDATE stock SET quantity='$new_dest_qty' WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$new_loc'");
+        } else {
+            $b_val = (empty($batch_id)) ? "0" : "'$batch_id'";
+            mysqli_query($conn, "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', $b_val, '$new_loc', '$move_qty')");
+        }
+
+        // 3. Log as MOVE transaction
+        mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
+                             VALUES ('$item_id', '$batch_id', '$new_loc', '" . $_SESSION['user_id'] . "', 'MOVE', '$move_qty', NOW(), 'FROM LOC $old_loc')");
+
+        echo "<script>alert('✅ Successfully moved $move_qty items to the new bin!'); window.location.href='stock-location.php';</script>";
         exit();
     }
-    // ---------------------------------------------------------------
-
-    // --- C. EXECUTE MOVE ---
-
-    // 1. Decrease Source (Old Location)
-    $new_source_qty = $source_row['quantity'] - $move_qty;
-    if ($new_source_qty == 0) {
-        // If empty, delete the row
-        mysqli_query($conn, "DELETE FROM stock WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$old_loc'");
-    } else {
-        // Else, just update quantity
-        mysqli_query($conn, "UPDATE stock SET quantity='$new_source_qty' WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$old_loc'");
-    }
-
-    // 2. Increase Destination (New Location)
-    $dest_sql = "SELECT quantity FROM stock WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$new_loc'";
-    $check_dest = mysqli_query($conn, $dest_sql);
-    $dest_row = mysqli_fetch_assoc($check_dest);
-
-    if ($dest_row) {
-        // Update existing record
-        $new_dest_qty = $dest_row['quantity'] + $move_qty;
-        mysqli_query($conn, "UPDATE stock SET quantity='$new_dest_qty' WHERE item_id='$item_id' AND $batch_sql_check AND location_id='$new_loc'");
-    } else {
-        // Insert new record
-        $b_val = (empty($batch_id)) ? "0" : "'$batch_id'";
-        mysqli_query($conn, "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', $b_val, '$new_loc', '$move_qty')");
-    }
-
-    // 3. Log the Transaction
-    mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
-                         VALUES ('$item_id', '$batch_id', '$new_loc', '" . $_SESSION['user_id'] . "', 'MOVE', '$move_qty', NOW(), 'FROM LOC $old_loc')");
-
-    echo "<script>alert('✅ Successfully moved $move_qty items!'); window.location.href='stock-location.php';</script>";
 }
 
 // --- FILTER LOGIC ---
@@ -133,7 +148,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
     <meta charset="UTF-8">
     <title>TrackFlow – Stock by Location</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css?v=55">
+    <link rel="stylesheet" href="../assets/css/style.css?v=56">
 </head>
 
 <body class="trackflow-body">
@@ -158,7 +173,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
         <div class="tf-page-header">
             <div class="tf-page-title">
                 <h2>Stock Management</h2>
-                <p>View and move stock between locations</p>
+                <p>View, move, or dispatch stock from specific locations</p>
             </div>
 
             <div class="tf-loc-filter-group">
@@ -215,7 +230,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
                             echo "<td style='text-align:right; padding-right:30px;'>
                                     <button class='tf-btn-secondary' style='font-size:12px; padding:6px 12px;' 
                                         onclick='openMoveModal(\"$item_id\", \"$batch_id\", \"$old_loc\", \"$item_name\", \"$loc_code\", \"$max_qty\")'>
-                                        <i class='bi bi-arrow-left-right'></i> Move
+                                        <i class='bi bi-arrow-left-right'></i> Action
                                     </button>
                                   </td>";
                             echo "</tr>";
@@ -231,7 +246,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
 
     <div id="MOVE_MODAL" class="modal-overlay">
         <div class="modal-box">
-            <h3 style="margin-top:0; margin-bottom:5px;">Move Stock</h3>
+            <h3 style="margin-top:0; margin-bottom:5px;">Move or Dispatch Stock</h3>
             <p id="move_item_label" style="margin-top:0; color:#6b7280; font-size:14px; margin-bottom:20px;">...</p>
 
             <form method="POST">
@@ -242,24 +257,27 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
                 <label style="font-size:13px; font-weight:600; color:#6b7280;">Current Location</label>
                 <input type="text" id="current_loc_display" disabled style="background:#f3f4f6; color:#9ca3af; cursor:not-allowed;">
 
-                <label style="font-size:13px; font-weight:600; color:#6b7280; margin-top:10px; display:block;">Quantity to Move</label>
+                <label style="font-size:13px; font-weight:600; color:#6b7280; margin-top:10px; display:block;">Quantity to Move/Dispatch</label>
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <input type="number" name="move_quantity" id="input_move_qty" min="1" required style="font-weight:bold;">
-                    <span id="max_qty_label" style="font-size:12px; color:#6b7280;">(Max: 0)</span>
+                    <input type="number" name="move_quantity" id="input_move_qty" min="1" required style="font-weight:bold; width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <span id="max_qty_label" style="font-size:12px; color:#6b7280; min-width: 90px;">(Max: 0)</span>
                 </div>
 
-                <label style="font-size:13px; font-weight:600; color:#6b7280; margin-top:10px; display:block;">Select New Location</label>
-                <select name="new_location_id" required>
-                    <?php foreach ($locations_list as $l): ?>
-                        <option value="<?php echo $l['location_id']; ?>">
-                            <?php echo $l['location_code'] . " - " . $l['description']; ?>
-                        </option>
-                    <?php endforeach; ?>
+                <label style="font-size:13px; font-weight:600; color:#6b7280; margin-top:15px; display:block;">Action / New Location</label>
+                <select name="new_location_id" required style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <option value="OUT" style="color: #dc2626; font-weight: bold;">🚪 DISPATCH (Remove from Warehouse)</option>
+                    <optgroup label="Or move to another shelf:">
+                        <?php foreach ($locations_list as $l): ?>
+                            <option value="<?php echo $l['location_id']; ?>">
+                                <?php echo $l['location_code'] . " - " . $l['description']; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </optgroup>
                 </select>
 
-                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                    <button type="button" onclick="closeModal()" class="btn-cancel" style="background:transparent; border:1px solid #e5e7eb; color:#374151;">Cancel</button>
-                    <button type="submit" name="move_stock_btn" class="tf-btn-primary">Confirm Move</button>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:25px;">
+                    <button type="button" onclick="closeModal()" class="btn-cancel" style="background:transparent; border:1px solid #e5e7eb; color:#374151; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Cancel</button>
+                    <button type="submit" name="move_stock_btn" class="tf-btn-primary" style="padding: 10px 20px;">Confirm Action</button>
                 </div>
             </form>
         </div>
@@ -281,7 +299,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
             inputOldLoc.value = oldLocId;
 
             let batchText = (batchId && batchId != '0') ? " (Batch " + batchId + ")" : "";
-            labelItem.innerText = "Moving: " + itemName + batchText;
+            labelItem.innerText = "Target: " + itemName + batchText;
 
             displayLoc.value = locCode;
 
