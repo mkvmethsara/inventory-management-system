@@ -186,21 +186,21 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
     </aside>
 
     <main class="tf-main">
-        <div class="tf-page-header">
+        <div class="tf-page-header" style="margin-bottom: 15px; border-bottom: none; padding-bottom: 0;">
             <div class="tf-page-title">
                 <h2>Stock Management</h2>
                 <p>View, move, or dispatch stock from specific locations</p>
             </div>
+        </div>
 
-            <div class="tf-loc-filter-group" style="max-width: 600px; overflow-x: auto; white-space: nowrap; display: flex; gap: 8px; padding-bottom: 5px;">
-                <a href="stock-location.php?loc=all" class="tf-loc-btn <?php echo ($filter_loc == 'all') ? 'active' : ''; ?>">All</a>
-                <?php foreach ($locations_list as $l_code): ?>
-                    <a href="stock-location.php?loc=<?php echo $l_code; ?>"
-                        class="tf-loc-btn <?php echo ($filter_loc == $l_code) ? 'active' : ''; ?>">
-                        <?php echo $l_code; ?>
-                    </a>
-                <?php endforeach; ?>
-            </div>
+        <div class="tf-loc-filter-group" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px;">
+            <a href="stock-location.php?loc=all" class="tf-loc-btn <?php echo ($filter_loc == 'all') ? 'active' : ''; ?>">All</a>
+            <?php foreach ($locations_list as $l_code): ?>
+                <a href="stock-location.php?loc=<?php echo $l_code; ?>"
+                    class="tf-loc-btn <?php echo ($filter_loc == $l_code) ? 'active' : ''; ?>">
+                    <?php echo $l_code; ?>
+                </a>
+            <?php endforeach; ?>
         </div>
 
         <div class="tf-table-container">
