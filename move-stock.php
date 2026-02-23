@@ -300,7 +300,7 @@ if (isset($_POST['qr_code'])) {
     <div class="header">
         <div class="top-bar">
             <a href="staff_dashboard.php" style="color:white; text-decoration:none;">← Dashboard</a>
-            <div class="status">🚚 TRANSFER & DISPATCH</div>
+            <div class="status">TRANSFER & DISPATCH</div>
         </div>
         <h1>Move & Dispatch Stock</h1>
         <div class="subtitle">Scan physical items to transfer or dispatch</div>
@@ -322,7 +322,7 @@ if (isset($_POST['qr_code'])) {
                 <div class="scanner-wrapper" id="scannerBox">
                     <div id="reader" style="width:100%;height:100%;"></div>
                 </div>
-                <button onclick="startScan()" class="btn-scan" id="scanBtn">🔄 Tap to Scan Item</button>
+                <button onclick="startScan()" class="btn-scan" id="scanBtn">Tap to Scan Item</button>
             </div>
         <?php endif; ?>
 
@@ -351,8 +351,8 @@ if (isset($_POST['qr_code'])) {
 
                     <div class="section-label">2. Select Action</div>
                     <select name="action_type" id="actionType" class="modern-select" onchange="toggleLocationInput()" required>
-                        <option value="MOVE">🚚 Move to another shelf</option>
-                        <option value="OUT" class="dispatch-option">🚪 DISPATCH (Remove from Warehouse)</option>
+                        <option value="MOVE">Move to another shelf</option>
+                        <option value="OUT" class="dispatch-option">DISPATCH (Remove from Warehouse)</option>
                     </select>
 
                     <div id="locationInputGroup">

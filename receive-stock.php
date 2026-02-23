@@ -289,7 +289,7 @@ if (isset($_POST['qr_code'])) {
                     <div id="reader" style="width:100%;height:100%;"></div>
                 </div>
 
-                <button onclick="startScan()" class="btn-start-scan" id="scanBtn">📸 Tap to Scan QR</button>
+                <button onclick="startScan()" class="btn-start-scan" id="scanBtn">Tap to Scan QR</button>
             </div>
         <?php endif; ?>
 
@@ -297,7 +297,7 @@ if (isset($_POST['qr_code'])) {
             <div class="result-card">
 
                 <div class="item-header">
-                    <div class="badge-success">✅ Verified Item</div>
+                    <div class="badge-success">Verified Item</div>
                     <h2 style="margin:10px 0; color:#374151;"><?php echo $scanned_item['item_name']; ?></h2>
                     <div style="color:#6b7280; font-family:monospace;"><?php echo $scanned_item['item_code']; ?></div>
                 </div>
@@ -322,7 +322,7 @@ if (isset($_POST['qr_code'])) {
                     <div style="text-align:left; margin-bottom:5px; font-weight:bold; color:#4b5563;">Total Quantity to Store:</div>
                     <input type="number" name="quantity" class="modern-input" placeholder="e.g. 1200" required min="1">
 
-                    <button type="submit" name="save_stock" class="btn-confirm">✅ Confirm & Save</button>
+                    <button type="submit" name="save_stock" class="btn-confirm">Confirm & Save</button>
                     <a href="receive-stock.php" style="display:block; margin-top:15px; color:#ef4444; text-decoration:none; font-weight:bold;">Cancel</a>
                 </form>
             </div>
