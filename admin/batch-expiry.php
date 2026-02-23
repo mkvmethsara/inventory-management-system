@@ -21,11 +21,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (!empty($batch_id)) {
         // --- UPDATE EXISTING BATCH ---
-        // 1. Update Batch Details
         $sql_update = "UPDATE item_batches SET received_date='$received', expiry_date='$expiry' WHERE batch_id='$batch_id'";
         mysqli_query($conn, $sql_update);
 
-        // 2. Update Stock Quantity (Simple overwrite for this demo)
         $sql_stock = "UPDATE stock SET quantity='$qty' WHERE batch_id='$batch_id'";
         mysqli_query($conn, $sql_stock);
 
@@ -35,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql_batch = "INSERT INTO item_batches (item_id, received_date, expiry_date) VALUES ('$item_id', '$received', '$expiry')";
         if (mysqli_query($conn, $sql_batch)) {
             $new_batch_id = mysqli_insert_id($conn);
-            // Defaulting to Location ID 1 for simplicity
             $sql_stock = "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', '$new_batch_id', 1, '$qty')";
             mysqli_query($conn, $sql_stock);
             echo "<script>alert('✅ New Batch Added!'); window.location.href='batch-expiry.php';</script>";
@@ -43,14 +40,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// --- 2. HANDLE DELETE ---
+// --- 2. HANDLE DELETE (WITH SAFETY CHECKS) ---
 if (isset($_GET['delete_id'])) {
-    $del_id = $_GET['delete_id'];
-    // Delete from Stock first (Foreign Key)
-    mysqli_query($conn, "DELETE FROM stock WHERE batch_id='$del_id'");
-    // Then Delete Batch
-    mysqli_query($conn, "DELETE FROM item_batches WHERE batch_id='$del_id'");
-    echo "<script>alert('🗑️ Batch Deleted'); window.location.href='batch-expiry.php';</script>";
+    $del_id = mysqli_real_escape_string($conn, $_GET['delete_id']);
+
+    // Check current stock quantity for this batch
+    $check_qty_sql = "SELECT COALESCE(SUM(quantity), 0) as total_qty FROM stock WHERE batch_id='$del_id'";
+    $check_qty_res = mysqli_query($conn, $check_qty_sql);
+    $qty_row = mysqli_fetch_assoc($check_qty_res);
+
+    if ($qty_row['total_qty'] > 0) {
+        // Block deletion if items are still on the shelf
+        echo "<script>alert('⚠️ Cannot delete: This batch still has " . $qty_row['total_qty'] . " items in stock! Please dispatch them first.'); window.location.href='batch-expiry.php';</script>";
+    } else {
+        try {
+            // Delete empty stock records first (if any exist with 0 quantity)
+            mysqli_query($conn, "DELETE FROM stock WHERE batch_id='$del_id'");
+            // Then Delete Batch
+            mysqli_query($conn, "DELETE FROM item_batches WHERE batch_id='$del_id'");
+
+            echo "<script>alert('🗑️ Batch successfully deleted.'); window.location.href='batch-expiry.php';</script>";
+        } catch (Exception $e) {
+            // Gracefully handle Foreign Key constraint errors (e.g., existing transaction logs)
+            echo "<script>alert('⚠️ Cannot delete: This batch is linked to past transaction logs. It must be kept for auditing purposes.'); window.location.href='batch-expiry.php';</script>";
+        }
+    }
 }
 
 // --- 3. GET DATA ---
@@ -78,20 +92,16 @@ $result = mysqli_query($conn, $sql);
         /* MODERN DROPDOWN STYLES */
         .tf-modern-select {
             appearance: none;
-            /* Removes default OS styling */
             background-color: white;
             border: 1px solid #cbd5e1;
             border-radius: 10px;
             padding: 10px 40px 10px 15px;
-            /* Extra padding on right for the arrow */
             font-size: 14px;
             font-weight: 600;
             color: #334155;
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
             transition: all 0.2s ease;
-
-            /* Custom dropdown arrow icon */
             background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
             background-repeat: no-repeat;
             background-position: right 15px top 50%;
@@ -108,14 +118,12 @@ $result = mysqli_query($conn, $sql);
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
-        /* The Container for the dots */
         .menu-container {
             position: relative;
             display: inline-block;
             cursor: pointer;
         }
 
-        /* The Dots Icon */
         .menu-dots {
             padding: 8px;
             border-radius: 50%;
@@ -128,7 +136,6 @@ $result = mysqli_query($conn, $sql);
             color: #374151;
         }
 
-        /* The Hidden Dropdown Menu */
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -181,7 +188,6 @@ $result = mysqli_query($conn, $sql);
             <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
             <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
             <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
-
             <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
             <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
@@ -212,7 +218,6 @@ $result = mysqli_query($conn, $sql);
             <?php
             if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
-                    // Styles & Logic
                     $cat = $row['category'] ?? 'General';
                     $icon_color = ($cat == 'Medicine') ? 'purple' : (($cat == 'Supplies') ? 'orange' : 'blue');
 
@@ -232,7 +237,6 @@ $result = mysqli_query($conn, $sql);
                         $status_tag = "expiring";
                     }
 
-                    // Pre-paring Data for Edit
                     $b_id = $row['batch_id'];
                     $b_item = $row['item_id'];
                     $b_qty = $row['batch_qty'];
@@ -323,9 +327,7 @@ $result = mysqli_query($conn, $sql);
     </div>
 
     <script>
-        // 1. Modal Logic (Add vs Edit)
         function openPopup() {
-            // Reset for Add
             document.getElementById("modalTitle").innerText = "Add New Batch";
             document.getElementById("saveBtn").innerText = "Save Batch";
             document.getElementById("batch_id_input").value = "";
@@ -336,7 +338,6 @@ $result = mysqli_query($conn, $sql);
         }
 
         function editBatch(id, itemId, qty, rec, exp) {
-            // Fill for Edit
             document.getElementById("modalTitle").innerText = "Edit Batch Details";
             document.getElementById("saveBtn").innerText = "Update Batch";
             document.getElementById("batch_id_input").value = id;
@@ -345,7 +346,7 @@ $result = mysqli_query($conn, $sql);
             document.getElementById("rec_input").value = rec;
             document.getElementById("exp_input").value = exp;
 
-            closeAllMenus(); // Hide the dots menu
+            closeAllMenus();
             document.getElementById("batchModal").style.display = "flex";
         }
 
@@ -353,14 +354,11 @@ $result = mysqli_query($conn, $sql);
             document.getElementById("batchModal").style.display = "none";
         }
 
-        // 2. Dropdown Menu Logic
         function toggleMenu(menuId) {
-            // Close others first
             const allMenus = document.querySelectorAll('.dropdown-menu');
             allMenus.forEach(menu => {
                 if (menu.id !== menuId) menu.classList.remove('show-menu');
             });
-            // Toggle specific menu
             document.getElementById(menuId).classList.toggle('show-menu');
         }
 
@@ -368,13 +366,11 @@ $result = mysqli_query($conn, $sql);
             document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show-menu'));
         }
 
-        // Close menu if clicking outside
         window.onclick = function(event) {
             if (event.target == document.getElementById("batchModal")) closePopup();
             if (!event.target.matches('.menu-dots')) closeAllMenus();
         }
 
-        // 3. Filter Logic
         function filterBatches() {
             const filterValue = document.getElementById('statusFilter').value;
 
@@ -385,10 +381,8 @@ $result = mysqli_query($conn, $sql);
                 if (filterValue === 'all') {
                     row.style.display = "flex";
                 } else if (filterValue === 'lowstock') {
-                    // Check if quantity is less than 20
                     row.style.display = (qty < 20) ? "flex" : "none";
                 } else {
-                    // Normal check for 'expired' or 'expiring'
                     row.style.display = (filterValue === status) ? "flex" : "none";
                 }
             });

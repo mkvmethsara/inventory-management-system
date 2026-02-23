@@ -23,10 +23,10 @@ if (isset($_POST['save_location_btn'])) {
 
     if (!empty($id)) {
         $sql = "UPDATE locations SET location_code='$code', description='$desc' WHERE location_id='$id'";
-        $msg = "✅ Location Updated!";
+        $msg = "✅ Storage Bin Updated!";
     } else {
         $sql = "INSERT INTO locations (location_code, description) VALUES ('$code', '$desc')";
-        $msg = "✅ New Location Created!";
+        $msg = "✅ New Storage Bin Built!";
     }
 
     if (mysqli_query($conn, $sql)) {
@@ -44,7 +44,7 @@ if (isset($_GET['delete_id'])) {
             echo "<script>window.location.href='locations.php';</script>";
         }
     } catch (Exception $e) {
-        echo "<script>alert('⚠️ Cannot delete! Stock is currently stored in this location.'); window.location.href='locations.php';</script>";
+        echo "<script>alert('⚠️ Cannot demolish bin! Physical stock is currently sitting on this shelf. Please move it first.'); window.location.href='locations.php';</script>";
     }
 }
 
@@ -60,7 +60,7 @@ $result = mysqli_query($conn, $sql);
 
 <head>
     <meta charset="UTF-8">
-    <title>TrackFlow – Locations Management</title>
+    <title>TrackFlow – Warehouse Layout</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css?v=13">
 </head>
@@ -84,27 +84,34 @@ $result = mysqli_query($conn, $sql);
     <main class="tf-main">
         <div class="tf-page-header">
             <div class="tf-page-title">
-                <h2>Locations Management</h2>
-                <p>Manage warehouse storage locations</p>
+                <h2>Warehouse Layout Setup</h2>
+                <p>Configure physical zones, aisles, and storage bins</p>
             </div>
             <button onclick="openModal()" class="tf-btn-primary" style="background:#111827;">
-                <i class="bi bi-plus-lg"></i> Add New Location
+                <i class="bi bi-tools"></i> Build New Storage Bin
             </button>
         </div>
 
         <div class="tf-table-container">
-            <div style="padding: 20px; border-bottom: 1px solid #f3f4f6;">
-                <input type="text" id="searchInput" placeholder="Search locations..." style="padding: 10px 15px; width: 300px; border: 1px solid #e5e7eb; border-radius: 8px; outline:none;">
+            <div style="padding: 20px; border-bottom: 1px solid #f3f4f6; background:#f8fafc;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="position:relative;">
+                        <i class="bi bi-search" style="position:absolute; left:12px; top:10px; color:#9ca3af;"></i>
+                        <input type="text" id="searchInput" placeholder="Search physical bins..." style="padding: 10px 15px 10px 35px; width: 300px; border: 1px solid #e5e7eb; border-radius: 8px; outline:none;">
+                    </div>
+                    <div style="font-size:12px; color:#64748b; font-weight:bold;">
+                        <i class="bi bi-info-circle"></i> This page manages physical shelves, including empty ones.
+                    </div>
+                </div>
             </div>
 
             <table class="tf-table" id="locTable">
                 <thead>
                     <tr>
-                        <th style="padding-left:30px;">Location Code</th>
-                        <th>Type</th>
-                        <th>Description</th>
-                        <th>Items Stored</th>
-                        <th>Total Quantity</th>
+                        <th style="padding-left:30px;">Bin / Shelf Code</th>
+                        <th>Warehouse Zone</th>
+                        <th>Physical Description</th>
+                        <th>Current Capacity Used</th>
                         <th style="text-align:right;">Actions</th>
                     </tr>
                 </thead>
@@ -117,22 +124,27 @@ $result = mysqli_query($conn, $sql);
                             $desc = htmlspecialchars($row['description']);
 
                             // Determine Type for display
-                            $type_badge = (substr($code, 0, 1) === '1') ? "<span style='color:#b45309; background:#fef3c7; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px;'>DRY</span>" : "<span style='color:#1d4ed8; background:#dbeafe; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px;'>DRINKS</span>";
+                            $type_badge = (substr($code, 0, 1) === '1') ? "<span style='color:#b45309; background:#fef3c7; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px;'><i class='bi bi-box'></i> DRY ZONE</span>" : "<span style='color:#1d4ed8; background:#dbeafe; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px;'><i class='bi bi-droplet-half'></i> DRINKS ZONE</span>";
+
+                            // If shelf is empty, highlight it!
+                            $capacity_display = ($row['total_units'] == 0)
+                                ? "<span style='color:#10b981; font-weight:bold; background:#dcfce7; padding:4px 8px; border-radius:6px; font-size:12px;'>EMPTY / AVAILABLE</span>"
+                                : "<span class='metric-value'>" . number_format($row['total_units']) . "</span> <span class='metric-label'>boxes occupying space</span>";
 
                             echo "<tr>";
-                            echo "<td style='padding-left:30px;'><span class='loc-pill'><i class='bi bi-geo-alt-fill'></i> $code</span></td>";
+                            echo "<td style='padding-left:30px;'><span class='loc-pill' style='background:#f1f5f9; border:1px solid #cbd5e1;'><i class='bi bi-layers-fill'></i> $code</span></td>";
                             echo "<td>$type_badge</td>";
-                            echo "<td style='color:#4b5563; font-size:14px;'>$desc</td>";
-                            echo "<td><span class='metric-value'>" . $row['unique_items'] . "</span> <span class='metric-label'>items</span></td>";
-                            echo "<td><span class='metric-value'>" . number_format($row['total_units']) . "</span> <span class='metric-label'>units</span></td>";
+                            echo "<td style='color:#4b5563; font-size:14px; font-style:italic;'>\"$desc\"</td>";
+                            echo "<td>$capacity_display</td>";
+
                             echo "<td style='text-align:right;'>
-                                    <button class='btn-text edit-btn' onclick='editLocation(\"$id\", \"$code\", \"$desc\")'><i class='bi bi-pencil-square'></i> Edit</button>
-                                    <a href='locations.php?delete_id=$id' class='btn-text delete-btn' onclick=\"return confirm('Delete this location?');\"><i class='bi bi-trash'></i> Delete</a>
+                                    <button class='btn-text edit-btn' onclick='editLocation(\"$id\", \"$code\", \"$desc\")'><i class='bi bi-pencil-square'></i> Configure</button>
+                                    <a href='locations.php?delete_id=$id' class='btn-text delete-btn' onclick=\"return confirm('Are you sure you want to delete this physical shelf from the system?');\"><i class='bi bi-trash3'></i> Demolish</a>
                                   </td>";
                             echo "</tr>";
                         }
                     } else {
-                        echo "<tr><td colspan='6' style='text-align:center; padding:50px; color:#9ca3af;'>No locations found.</td></tr>";
+                        echo "<tr><td colspan='5' style='text-align:center; padding:50px; color:#9ca3af;'>No physical locations built yet.</td></tr>";
                     }
                     ?>
                 </tbody>
@@ -142,34 +154,34 @@ $result = mysqli_query($conn, $sql);
 
     <div id="LOC_MODAL" class="modal-overlay">
         <div class="modal-box">
-            <h3 id="modalTitle" style="margin-top:0; margin-bottom:20px;">Add New Location</h3>
+            <h3 id="modalTitle" style="margin-top:0; margin-bottom:20px;">Build New Storage Bin</h3>
             <form method="POST">
                 <input type="hidden" name="location_id" id="loc_id_input">
 
                 <div style="display:flex; gap:10px; margin-bottom:15px;">
                     <div style="flex:1;">
-                        <label style="font-size:13px; font-weight:600; color:#6b7280; display:block;">Type</label>
-                        <select name="loc_type" id="loc_type_input" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" required>
-                            <option value="1">1 - Dry</option>
-                            <option value="0">0 - Drinks</option>
+                        <label style="font-size:13px; font-weight:600; color:#6b7280; display:block;">Warehouse Zone</label>
+                        <select name="loc_type" id="loc_type_input" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px; color:#1e293b;" required>
+                            <option value="1">1 - Dry Zone</option>
+                            <option value="0">0 - Drinks Zone</option>
                         </select>
                     </div>
                     <div style="flex:1;">
-                        <label style="font-size:13px; font-weight:600; color:#6b7280; display:block;">Column</label>
-                        <input type="number" name="loc_col" id="loc_col_input" placeholder="1-99" min="1" max="99" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" required>
+                        <label style="font-size:13px; font-weight:600; color:#6b7280; display:block;">Aisle / Column</label>
+                        <input type="number" name="loc_col" id="loc_col_input" placeholder="1-99" min="1" max="99" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px; color:#1e293b;" required>
                     </div>
                     <div style="flex:1;">
-                        <label style="font-size:13px; font-weight:600; color:#6b7280; display:block;">Bin</label>
-                        <input type="number" name="loc_bin" id="loc_bin_input" placeholder="1-99" min="1" max="99" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" required>
+                        <label style="font-size:13px; font-weight:600; color:#6b7280; display:block;">Shelf / Bin</label>
+                        <input type="number" name="loc_bin" id="loc_bin_input" placeholder="1-99" min="1" max="99" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px; color:#1e293b;" required>
                     </div>
                 </div>
 
-                <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Description</label>
-                <input type="text" name="description" id="loc_desc_input" placeholder="e.g. Rack A, Top Shelf" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;" required>
+                <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Physical Description</label>
+                <input type="text" name="description" id="loc_desc_input" placeholder="e.g. Rack A, Top Shelf" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px; color:#1e293b;" required>
 
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                     <button type="button" onclick="closeModal()" class="btn-cancel" style="background:transparent; border:1px solid #e5e7eb; color:#374151;">Cancel</button>
-                    <button type="submit" name="save_location_btn" class="tf-btn-primary">Save Location</button>
+                    <button type="submit" name="save_location_btn" id="modalSaveBtn" class="tf-btn-primary">Save Bin Setup</button>
                 </div>
             </form>
         </div>
@@ -179,7 +191,8 @@ $result = mysqli_query($conn, $sql);
         const modal = document.getElementById("LOC_MODAL");
 
         function openModal() {
-            document.getElementById("modalTitle").innerText = "Add New Location";
+            document.getElementById("modalTitle").innerText = "Build New Storage Bin";
+            document.getElementById("modalSaveBtn").innerText = "Save Bin Setup";
             document.getElementById("loc_id_input").value = "";
             document.getElementById("loc_type_input").value = "1";
             document.getElementById("loc_col_input").value = "";
@@ -189,7 +202,8 @@ $result = mysqli_query($conn, $sql);
         }
 
         function editLocation(id, code, desc) {
-            document.getElementById("modalTitle").innerText = "Edit Location";
+            document.getElementById("modalTitle").innerText = "Configure Storage Bin";
+            document.getElementById("modalSaveBtn").innerText = "Update Setup";
             document.getElementById("loc_id_input").value = id;
 
             // Split "1-01-01" into parts
@@ -208,6 +222,13 @@ $result = mysqli_query($conn, $sql);
         window.onclick = function(e) {
             if (e.target == modal) closeModal();
         }
+
+        document.getElementById("searchInput").addEventListener("keyup", function() {
+            let val = this.value.toLowerCase();
+            document.querySelectorAll("#locTable tbody tr").forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+            });
+        });
     </script>
 </body>
 

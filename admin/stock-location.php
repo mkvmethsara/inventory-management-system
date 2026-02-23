@@ -210,6 +210,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
                 <thead>
                     <tr>
                         <th style="padding-left:30px;">LOCATION</th>
+                        <th>TYPE</th>
                         <th>ITEM</th>
                         <th>BATCH</th>
                         <th>IN-STOCK QTY</th>
@@ -231,8 +232,12 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
                             $loc_code = $row['location_code'];
                             $max_qty = $row['quantity'];
 
+                            // Determine Type for display (1=Dry, 0=Drinks) based on location code
+                            $type_badge = (substr($loc_code, 0, 1) === '1') ? "<span style='color:#b45309; background:#fef3c7; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px;'>DRY</span>" : "<span style='color:#1d4ed8; background:#dbeafe; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px;'>DRINKS</span>";
+
                             echo "<tr>";
                             echo "<td style='padding-left:30px;'><span class='loc-badge'><i class='bi bi-geo-alt-fill'></i> $loc_code</span></td>";
+                            echo "<td>$type_badge</td>";
                             echo "<td style='font-weight:600; color:#1f2937;'>" . $row['item_name'] . "</td>";
                             echo "<td style='color:#6b7280; font-size:13px;'>" . $batch_display . "</td>";
                             echo "<td style='font-weight:800; font-size:16px; color:#111827;'>$qty</td>";
@@ -246,7 +251,7 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
                             echo "</tr>";
                         }
                     } else {
-                        echo "<tr><td colspan='5' style='text-align:center; padding:50px; color:#9ca3af;'>No stock found.</td></tr>";
+                        echo "<tr><td colspan='6' style='text-align:center; padding:50px; color:#9ca3af;'>No stock found.</td></tr>";
                     }
                     ?>
                 </tbody>
