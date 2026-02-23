@@ -44,18 +44,23 @@ if (isset($_POST['move_stock'])) {
             mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
                                 VALUES ('$item_id', '$batch_id', '$old_loc_id', '$user_id', 'OUT', '$move_qty', NOW(), 'DISPATCHED OUT')");
 
-            $message = "📦 Success! $move_qty items have been physically Dispatched.";
+            $message = "Success! $move_qty items have been physically Dispatched.";
             $message_type = "success";
         }
         // --- B. MOVE STOCK LOGIC ---
         else {
             $target_loc_code = mysqli_real_escape_string($conn, trim($_POST['target_location_code']));
 
+            // 🛡️ SECURITY FIX: Check if empty OR if it contains random letters/wrong format
             if (empty($target_loc_code)) {
-                $message = "❌ Error: Please type a destination location code.";
+                $message = "Error: Please type a destination location code.";
+                $message_type = "error";
+            } elseif (!preg_match('/^[01]-[0-9]{2}-[0-9]{2}$/', $target_loc_code)) {
+                // Blocks anything that doesn't match Type-Col-Bin exactly (e.g. blocks "htyyeryert")
+                $message = "Error: Invalid format! Location must be in Zone-Col-Bin format (e.g., 1-05-12).";
                 $message_type = "error";
             } else {
-                // 1. Find or Auto-Create Location
+                // 1. Find or Auto-Create Location (Now 100% safe to auto-create)
                 $loc_q = mysqli_query($conn, "SELECT location_id FROM locations WHERE location_code='$target_loc_code'");
                 if (mysqli_num_rows($loc_q) > 0) {
                     $target_loc_id = mysqli_fetch_assoc($loc_q)['location_id'];
@@ -66,7 +71,7 @@ if (isset($_POST['move_stock'])) {
 
                 // 2. Prevent moving to the exact same bin
                 if ($old_loc_id == $target_loc_id) {
-                    $message = "⚠️ Source and Destination are the exact same bin!";
+                    $message = "Error: Source and Destination are the exact same bin!";
                     $message_type = "error";
                 } else {
                     // 3. Check Target Bin Capacity (Max 500)
@@ -79,7 +84,7 @@ if (isset($_POST['move_stock'])) {
 
                     if ($move_qty > $available_space) {
                         // CAPACITY FULL: Block the physical move!
-                        $message = "❌ CAPACITY ERROR! Bin [$target_loc_code] only has space for $available_space more items. You cannot move $move_qty items here.";
+                        $message = "CAPACITY ERROR! Bin [$target_loc_code] only has space for $available_space more items. You cannot move $move_qty items here.";
                         $message_type = "error";
                     } else {
                         // CAPACITY OKAY: Execute the physical move!
@@ -103,14 +108,14 @@ if (isset($_POST['move_stock'])) {
                         mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
                                             VALUES ('$item_id', '$batch_id', '$target_loc_id', '$user_id', 'MOVE', '$move_qty', NOW(), 'FROM LOC $old_loc_id')");
 
-                        $message = "✅ Success! Physically moved $move_qty items to $target_loc_code.";
+                        $message = "Success! Physically moved $move_qty items to $target_loc_code.";
                         $message_type = "success";
                     }
                 }
             }
         }
     } else {
-        $message = "❌ Error: Not enough physical stock in the source location.";
+        $message = "Error: Not enough physical stock in the source location.";
         $message_type = "error";
     }
 }
@@ -120,7 +125,7 @@ if (isset($_POST['qr_code'])) {
     $code = mysqli_real_escape_string($conn, trim($_POST['qr_code']));
 
     if (filter_var($code, FILTER_VALIDATE_URL)) {
-        $message = "⚠️ You scanned a Website Link! Please use a Text-Only QR.";
+        $message = "Error: You scanned a Website Link! Please use a Text-Only QR.";
         $message_type = "error";
     } else {
         $sql = "SELECT * FROM items WHERE item_code = '$code'";
@@ -146,12 +151,12 @@ if (isset($_POST['qr_code'])) {
             }
 
             if (empty($available_stock)) {
-                $message = "⚠️ Item found, but the warehouse has 0 physical Stock. Nothing to move.";
+                $message = "Error: Item found, but the warehouse has 0 physical Stock. Nothing to move.";
                 $message_type = "error";
                 $scanned_item = null;
             }
         } else {
-            $message = "❌ Item not found: " . htmlspecialchars($code);
+            $message = "Error: Item not found: " . htmlspecialchars($code);
             $message_type = "error";
         }
     }
@@ -342,7 +347,7 @@ if (isset($_POST['qr_code'])) {
                     <select name="source_stock_signature" class="modern-select" required>
                         <?php foreach ($available_stock as $stk): ?>
                             <option value="<?php echo $stk['batch_id'] . '|' . $stk['location_id']; ?>">
-                                📍 <?php echo $stk['location_code']; ?> (Qty: <?php echo $stk['quantity']; ?>)
+                                <?php echo $stk['location_code']; ?> (Qty: <?php echo $stk['quantity']; ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -357,7 +362,7 @@ if (isset($_POST['qr_code'])) {
 
                     <div id="locationInputGroup">
                         <div class="section-label">Target Shelf Code</div>
-                        <input type="text" name="target_location_code" id="targetLocInput" class="modern-input" placeholder="e.g. 1-05-12" list="loc_suggestions" required>
+                        <input type="text" name="target_location_code" id="targetLocInput" class="modern-input" placeholder="e.g. 1-05-12" list="loc_suggestions" pattern="[01]-[0-9]{2}-[0-9]{2}" title="Format must be Zone-Col-Bin (e.g. 1-05-12)" required>
 
                         <datalist id="loc_suggestions">
                             <?php
@@ -373,7 +378,7 @@ if (isset($_POST['qr_code'])) {
                     <input type="number" name="quantity" class="modern-input" placeholder="Enter amount" required min="1">
 
                     <button type="submit" name="move_stock" class="btn-confirm">
-                        ✅ Confirm Physical Action
+                        Confirm Physical Action
                     </button>
 
                     <a href="move-stock.php" style="display:block; margin-top:20px; color:#ef4444; text-decoration:none; font-weight:bold;">Cancel</a>
@@ -385,7 +390,6 @@ if (isset($_POST['qr_code'])) {
 
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script>
-        // Toggle the target location input based on the action selected
         function toggleLocationInput() {
             const action = document.getElementById("actionType").value;
             const locGroup = document.getElementById("locationInputGroup");
@@ -393,10 +397,10 @@ if (isset($_POST['qr_code'])) {
 
             if (action === "OUT") {
                 locGroup.style.display = "none";
-                locInput.required = false; // Not required if dispatching
+                locInput.required = false;
             } else {
                 locGroup.style.display = "block";
-                locInput.required = true; // Required if moving
+                locInput.required = true;
             }
         }
 
