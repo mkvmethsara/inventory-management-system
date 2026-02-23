@@ -50,19 +50,24 @@ if (isset($_GET['delete_id'])) {
     $qty_row = mysqli_fetch_assoc($check_qty_res);
 
     if ($qty_row['total_qty'] > 0) {
-        // Block deletion if items are still on the shelf
+        // Block deletion if physical items are still on the shelf
         echo "<script>alert('⚠️ Cannot delete: This batch still has " . $qty_row['total_qty'] . " items in stock! Please dispatch them first.'); window.location.href='batch-expiry.php';</script>";
     } else {
         try {
-            // Delete empty stock records first (if any exist with 0 quantity)
+            // 1. Delete empty stock records first (if any exist with 0 quantity)
             mysqli_query($conn, "DELETE FROM stock WHERE batch_id='$del_id'");
-            // Then Delete Batch
+
+            // 2. UNLINK FROM TRANSACTIONS (This stops the Foreign Key error!)
+            // We set it to NULL so the history stays safe, but the batch can be deleted.
+            mysqli_query($conn, "UPDATE stock_transactions SET batch_id=NULL WHERE batch_id='$del_id'");
+
+            // 3. Then Delete the Batch safely
             mysqli_query($conn, "DELETE FROM item_batches WHERE batch_id='$del_id'");
 
             echo "<script>alert('🗑️ Batch successfully deleted.'); window.location.href='batch-expiry.php';</script>";
         } catch (Exception $e) {
-            // Gracefully handle Foreign Key constraint errors (e.g., existing transaction logs)
-            echo "<script>alert('⚠️ Cannot delete: This batch is linked to past transaction logs. It must be kept for auditing purposes.'); window.location.href='batch-expiry.php';</script>";
+            // Failsafe in case of other database strict constraints
+            echo "<script>alert('⚠️ Error: Database constraint prevented deletion.'); window.location.href='batch-expiry.php';</script>";
         }
     }
 }
