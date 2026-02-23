@@ -18,7 +18,7 @@ $available_stock = [];
 if (isset($_POST['move_stock'])) {
     $item_id   = $_POST['item_id'];
     $source_signature = $_POST['source_stock_signature']; // BatchID|LocationID
-    $target_loc_id = $_POST['target_location_id']; // Can be an ID or 'OUT'
+    $action_type = $_POST['action_type']; // 'MOVE' or 'OUT'
     $move_qty  = (int)$_POST['quantity'];
 
     // Split the signature back into IDs
@@ -30,10 +30,9 @@ if (isset($_POST['move_stock'])) {
 
     if ($source_row && $source_row['quantity'] >= $move_qty) {
 
-        // B. CHECK IF WE ARE MOVING OR DISPATCHING
-        if ($target_loc_id === 'OUT') {
+        // --- A. STOCK OUT (DISPATCH) LOGIC ---
+        if ($action_type === 'OUT') {
 
-            // --- STOCK OUT (DISPATCH) LOGIC ---
             // Decrease from Old Location safely
             $new_src_qty = $source_row['quantity'] - $move_qty;
             if ($new_src_qty == 0) {
@@ -47,45 +46,67 @@ if (isset($_POST['move_stock'])) {
 
             $message = "📦 Success! $move_qty items have been physically Dispatched.";
             $message_type = "success";
-        } else {
-            // --- MOVE STOCK LOGIC WITH CAPACITY CHECK ---
+        }
+        // --- B. MOVE STOCK LOGIC ---
+        else {
+            $target_loc_code = mysqli_real_escape_string($conn, trim($_POST['target_location_code']));
 
-            // 1. Check Target Bin Capacity (Max 500)
-            $capacity_check_sql = mysqli_query($conn, "SELECT SUM(quantity) as total_bin_qty FROM stock WHERE location_id='$target_loc_id'");
-            $capacity_row = mysqli_fetch_assoc($capacity_check_sql);
-            $current_bin_qty = $capacity_row['total_bin_qty'] ? (int)$capacity_row['total_bin_qty'] : 0;
-
-            $max_capacity = 500;
-            $available_space = $max_capacity - $current_bin_qty;
-
-            if ($move_qty > $available_space) {
-                // CAPACITY FULL: Block the physical move!
-                $message = "❌ CAPACITY ERROR! This bin only has space for $available_space more items. You cannot move $move_qty items here.";
+            if (empty($target_loc_code)) {
+                $message = "❌ Error: Please type a destination location code.";
                 $message_type = "error";
             } else {
-                // CAPACITY OKAY: Execute the physical move!
-
-                // Decrease Source
-                $new_src_qty = $source_row['quantity'] - $move_qty;
-                if ($new_src_qty == 0) {
-                    mysqli_query($conn, "DELETE FROM stock WHERE item_id='$item_id' AND batch_id='$batch_id' AND location_id='$old_loc_id'");
+                // 1. Find or Auto-Create Location
+                $loc_q = mysqli_query($conn, "SELECT location_id FROM locations WHERE location_code='$target_loc_code'");
+                if (mysqli_num_rows($loc_q) > 0) {
+                    $target_loc_id = mysqli_fetch_assoc($loc_q)['location_id'];
                 } else {
-                    mysqli_query($conn, "UPDATE stock SET quantity = $new_src_qty WHERE item_id='$item_id' AND batch_id='$batch_id' AND location_id='$old_loc_id'");
+                    mysqli_query($conn, "INSERT INTO locations (location_code, description) VALUES ('$target_loc_code', 'Auto-created via Scanner')");
+                    $target_loc_id = mysqli_insert_id($conn);
                 }
 
-                // Increase Target
-                $check_target = mysqli_query($conn, "SELECT * FROM stock WHERE item_id='$item_id' AND batch_id='$batch_id' AND location_id='$target_loc_id'");
-                if (mysqli_num_rows($check_target) > 0) {
-                    mysqli_query($conn, "UPDATE stock SET quantity = quantity + $move_qty WHERE item_id='$item_id' AND batch_id='$batch_id' AND location_id='$target_loc_id'");
+                // 2. Prevent moving to the exact same bin
+                if ($old_loc_id == $target_loc_id) {
+                    $message = "⚠️ Source and Destination are the exact same bin!";
+                    $message_type = "error";
                 } else {
-                    mysqli_query($conn, "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', '$batch_id', '$target_loc_id', '$move_qty')");
+                    // 3. Check Target Bin Capacity (Max 500)
+                    $capacity_check_sql = mysqli_query($conn, "SELECT SUM(quantity) as total_bin_qty FROM stock WHERE location_id='$target_loc_id'");
+                    $capacity_row = mysqli_fetch_assoc($capacity_check_sql);
+                    $current_bin_qty = $capacity_row['total_bin_qty'] ? (int)$capacity_row['total_bin_qty'] : 0;
+
+                    $max_capacity = 500;
+                    $available_space = $max_capacity - $current_bin_qty;
+
+                    if ($move_qty > $available_space) {
+                        // CAPACITY FULL: Block the physical move!
+                        $message = "❌ CAPACITY ERROR! Bin [$target_loc_code] only has space for $available_space more items. You cannot move $move_qty items here.";
+                        $message_type = "error";
+                    } else {
+                        // CAPACITY OKAY: Execute the physical move!
+
+                        // Decrease Source
+                        $new_src_qty = $source_row['quantity'] - $move_qty;
+                        if ($new_src_qty == 0) {
+                            mysqli_query($conn, "DELETE FROM stock WHERE item_id='$item_id' AND batch_id='$batch_id' AND location_id='$old_loc_id'");
+                        } else {
+                            mysqli_query($conn, "UPDATE stock SET quantity = $new_src_qty WHERE item_id='$item_id' AND batch_id='$batch_id' AND location_id='$old_loc_id'");
+                        }
+
+                        // Increase Target
+                        $check_target = mysqli_query($conn, "SELECT * FROM stock WHERE item_id='$item_id' AND batch_id='$batch_id' AND location_id='$target_loc_id'");
+                        if (mysqli_num_rows($check_target) > 0) {
+                            mysqli_query($conn, "UPDATE stock SET quantity = quantity + $move_qty WHERE item_id='$item_id' AND batch_id='$batch_id' AND location_id='$target_loc_id'");
+                        } else {
+                            mysqli_query($conn, "INSERT INTO stock (item_id, batch_id, location_id, quantity) VALUES ('$item_id', '$batch_id', '$target_loc_id', '$move_qty')");
+                        }
+
+                        mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
+                                            VALUES ('$item_id', '$batch_id', '$target_loc_id', '$user_id', 'MOVE', '$move_qty', NOW(), 'FROM LOC $old_loc_id')");
+
+                        $message = "✅ Success! Physically moved $move_qty items to $target_loc_code.";
+                        $message_type = "success";
+                    }
                 }
-
-                mysqli_query($conn, "INSERT INTO stock_transactions (item_id, batch_id, location_id, user_id, transaction_type, quantity, transaction_time, reference) 
-                                    VALUES ('$item_id', '$batch_id', '$target_loc_id', '$user_id', 'MOVE', '$move_qty', NOW(), 'FROM LOC $old_loc_id')");
-
-                $message = "✅ Success! Physically moved $move_qty items to new location.";
-                $message_type = "success";
             }
         }
     } else {
@@ -177,13 +198,20 @@ if (isset($_POST['qr_code'])) {
         .modern-select,
         .modern-input {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: 2px solid #e5e7eb;
             border-radius: 10px;
             font-size: 15px;
             background: white;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             box-sizing: border-box;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .modern-input::placeholder {
+            color: #9ca3af;
+            font-weight: normal;
         }
 
         .btn-confirm {
@@ -196,6 +224,11 @@ if (isset($_POST['qr_code'])) {
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-confirm:active {
+            transform: scale(0.98);
         }
 
         .scanner-container {
@@ -232,6 +265,7 @@ if (isset($_POST['qr_code'])) {
             border-radius: 12px;
             font-weight: bold;
             text-align: center;
+            line-height: 1.5;
         }
 
         .alert-success {
@@ -249,7 +283,14 @@ if (isset($_POST['qr_code'])) {
         .dispatch-option {
             font-weight: bold;
             color: #b91c1c;
-            background: #fee2e2;
+        }
+
+        .section-label {
+            text-align: left;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #4b5563;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -297,40 +338,45 @@ if (isset($_POST['qr_code'])) {
                 <form method="POST">
                     <input type="hidden" name="item_id" value="<?php echo $scanned_item['item_id']; ?>">
 
-                    <div style="text-align:left; font-weight:bold; margin-bottom:5px; color:#4b5563;">1. Take From (Source Location)</div>
+                    <div class="section-label">1. Take From (Source Location)</div>
                     <select name="source_stock_signature" class="modern-select" required>
                         <?php foreach ($available_stock as $stk): ?>
                             <option value="<?php echo $stk['batch_id'] . '|' . $stk['location_id']; ?>">
                                 📍 <?php echo $stk['location_code']; ?> (Qty: <?php echo $stk['quantity']; ?>)
-                                - Exp: <?php echo $stk['expiry_date'] ? $stk['expiry_date'] : 'N/A'; ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
 
-                    <div style="text-align:center; margin:10px 0; color:#9ca3af; font-size:20px;">⬇️</div>
+                    <div style="text-align:center; margin:5px 0 15px 0; color:#9ca3af; font-size:20px;">⬇️</div>
 
-                    <div style="text-align:left; font-weight:bold; margin-bottom:5px; color:#4b5563;">2. Move To (Destination)</div>
-                    <select name="target_location_id" class="modern-select" required>
+                    <div class="section-label">2. Select Action</div>
+                    <select name="action_type" id="actionType" class="modern-select" onchange="toggleLocationInput()" required>
+                        <option value="MOVE">🚚 Move to another shelf</option>
                         <option value="OUT" class="dispatch-option">🚪 DISPATCH (Remove from Warehouse)</option>
-
-                        <optgroup label="Or move to another shelf:">
-                            <?php
-                            $locs = mysqli_query($conn, "SELECT * FROM locations");
-                            while ($l = mysqli_fetch_assoc($locs)) {
-                                echo "<option value='" . $l['location_id'] . "'>📍 " . $l['location_code'] . " - " . $l['description'] . "</option>";
-                            }
-                            ?>
-                        </optgroup>
                     </select>
 
-                    <div style="text-align:left; font-weight:bold; margin-bottom:5px; color:#4b5563;">3. Quantity to Process</div>
+                    <div id="locationInputGroup">
+                        <div class="section-label">Target Shelf Code</div>
+                        <input type="text" name="target_location_code" id="targetLocInput" class="modern-input" placeholder="e.g. 1-05-12" list="loc_suggestions" required>
+
+                        <datalist id="loc_suggestions">
+                            <?php
+                            $locs = mysqli_query($conn, "SELECT location_code FROM locations ORDER BY location_code ASC");
+                            while ($l = mysqli_fetch_assoc($locs)) {
+                                echo "<option value='" . $l['location_code'] . "'>";
+                            }
+                            ?>
+                        </datalist>
+                    </div>
+
+                    <div class="section-label" style="margin-top: 5px;">3. Quantity to Process</div>
                     <input type="number" name="quantity" class="modern-input" placeholder="Enter amount" required min="1">
 
                     <button type="submit" name="move_stock" class="btn-confirm">
                         ✅ Confirm Physical Action
                     </button>
 
-                    <a href="move-stock.php" style="display:block; margin-top:15px; color:#ef4444; text-decoration:none; font-weight:bold;">Cancel</a>
+                    <a href="move-stock.php" style="display:block; margin-top:20px; color:#ef4444; text-decoration:none; font-weight:bold;">Cancel</a>
                 </form>
             </div>
         <?php endif; ?>
@@ -339,6 +385,21 @@ if (isset($_POST['qr_code'])) {
 
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script>
+        // Toggle the target location input based on the action selected
+        function toggleLocationInput() {
+            const action = document.getElementById("actionType").value;
+            const locGroup = document.getElementById("locationInputGroup");
+            const locInput = document.getElementById("targetLocInput");
+
+            if (action === "OUT") {
+                locGroup.style.display = "none";
+                locInput.required = false; // Not required if dispatching
+            } else {
+                locGroup.style.display = "block";
+                locInput.required = true; // Required if moving
+            }
+        }
+
         function startScan() {
             document.getElementById("scannerBox").style.display = "block";
             document.getElementById("scanBtn").style.display = "none";
