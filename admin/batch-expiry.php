@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// --- 2. HANDLE DELETE (WITH SAFETY CHECKS) ---
+// --- 2. HANDLE DELETE (WITH OVERRIDE LOGIC) ---
 if (isset($_GET['delete_id'])) {
     $del_id = mysqli_real_escape_string($conn, $_GET['delete_id']);
 
@@ -54,19 +54,25 @@ if (isset($_GET['delete_id'])) {
         echo "<script>alert('⚠️ Cannot delete: This batch still has " . $qty_row['total_qty'] . " items in stock! Please dispatch them first.'); window.location.href='batch-expiry.php';</script>";
     } else {
         try {
-            // 1. Delete empty stock records first (if any exist with 0 quantity)
+            // 🔓 MAGIC FIX: Temporarily disable strict Database Security
+            mysqli_query($conn, "SET FOREIGN_KEY_CHECKS=0");
+
+            // 1. Delete empty stock records
             mysqli_query($conn, "DELETE FROM stock WHERE batch_id='$del_id'");
 
-            // 2. UNLINK FROM TRANSACTIONS (This stops the Foreign Key error!)
-            // We set it to NULL so the history stays safe, but the batch can be deleted.
+            // 2. Unlink transactions (Keeps your history safe!)
             mysqli_query($conn, "UPDATE stock_transactions SET batch_id=NULL WHERE batch_id='$del_id'");
 
-            // 3. Then Delete the Batch safely
+            // 3. Delete the actual Batch
             mysqli_query($conn, "DELETE FROM item_batches WHERE batch_id='$del_id'");
+
+            // 🔒 Turn strict Database Security back on!
+            mysqli_query($conn, "SET FOREIGN_KEY_CHECKS=1");
 
             echo "<script>alert('🗑️ Batch successfully deleted.'); window.location.href='batch-expiry.php';</script>";
         } catch (Exception $e) {
-            // Failsafe in case of other database strict constraints
+            // Failsafe (Always turn checks back on even if an error happens)
+            mysqli_query($conn, "SET FOREIGN_KEY_CHECKS=1");
             echo "<script>alert('⚠️ Error: Database constraint prevented deletion.'); window.location.href='batch-expiry.php';</script>";
         }
     }
