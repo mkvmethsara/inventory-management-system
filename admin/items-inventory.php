@@ -19,16 +19,21 @@ if (isset($_POST['update_item_btn'])) {
     $cat   = mysqli_real_escape_string($conn, $_POST['category']);
     $sup   = mysqli_real_escape_string($conn, $_POST['supplier_id']);
 
-    $sql = "UPDATE items SET item_name='$name', item_code='$code', category='$cat', supplier_id='$sup' WHERE item_id='$id'";
+    // 🛡️ PREVENT DUPLICATE ITEM CODE (Make sure the new code isn't used by a DIFFERENT item)
+    $check_duplicate = mysqli_query($conn, "SELECT item_code FROM items WHERE item_code='$code' AND item_id != '$id'");
 
-    if (mysqli_query($conn, $sql)) {
-        echo "<script>alert('✅ Item Updated Successfully!'); window.location.href='items-inventory.php';</script>";
+    if (mysqli_num_rows($check_duplicate) > 0) {
+        echo "<script>alert('❌ Error: The Item Code \'$code\' is already used by another item!'); window.location.href='items-inventory.php';</script>";
     } else {
-        echo "<script>alert('❌ Error: " . mysqli_error($conn) . "');</script>";
+        $sql = "UPDATE items SET item_name='$name', item_code='$code', category='$cat', supplier_id='$sup' WHERE item_id='$id'";
+
+        if (mysqli_query($conn, $sql)) {
+            echo "<script>alert('✅ Item Updated Successfully!'); window.location.href='items-inventory.php';</script>";
+        } else {
+            echo "<script>alert('❌ Error: " . mysqli_error($conn) . "');</script>";
+        }
     }
 }
-
-// (DELETED THE HANDLE DELETE ITEM LOGIC - Master items should not be deleted to protect transaction history)
 
 // --- 2. HANDLE ADD ITEM ---
 if (isset($_POST['add_item_btn'])) {
@@ -37,16 +42,23 @@ if (isset($_POST['add_item_btn'])) {
     $cat  = $_POST['category'];
     $sup  = $_POST['supplier_id'];
 
-    // Default Min Level
-    $min  = 10;
+    // 🛡️ PREVENT DUPLICATE ITEM CODE (Check if code already exists in DB)
+    $check_duplicate = mysqli_query($conn, "SELECT item_code FROM items WHERE item_code='$code'");
 
-    $sql = "INSERT INTO items (item_name, item_code, category, supplier_id, minimum_level, created_at) 
-            VALUES ('$name', '$code', '$cat', '$sup', '$min', NOW())";
-
-    if (mysqli_query($conn, $sql)) {
-        echo "<script>alert('✅ New Item Added!'); window.location.href='items-inventory.php';</script>";
+    if (mysqli_num_rows($check_duplicate) > 0) {
+        echo "<script>alert('❌ Error: The Item Code \'$code\' already exists in the system!'); window.location.href='items-inventory.php';</script>";
     } else {
-        echo "<script>alert('❌ Error: " . mysqli_error($conn) . "');</script>";
+        // Default Min Level
+        $min  = 10;
+
+        $sql = "INSERT INTO items (item_name, item_code, category, supplier_id, minimum_level, created_at) 
+                VALUES ('$name', '$code', '$cat', '$sup', '$min', NOW())";
+
+        if (mysqli_query($conn, $sql)) {
+            echo "<script>alert('✅ New Item Added!'); window.location.href='items-inventory.php';</script>";
+        } else {
+            echo "<script>alert('❌ Error: " . mysqli_error($conn) . "');</script>";
+        }
     }
 }
 
@@ -63,13 +75,15 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
     <title>TrackFlow – Product Catalog</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css?v=21">
-    
+
     <style>
         /* FIX FOR INVISIBLE TEXT IN MODAL */
-        .modal-box input, 
+        .modal-box input,
         .modal-box select {
-            color: #111827 !important; /* Forces dark text */
-            background-color: #ffffff !important; /* Ensures background is white */
+            color: #111827 !important;
+            /* Forces dark text */
+            background-color: #ffffff !important;
+            /* Ensures background is white */
         }
     </style>
 </head>
@@ -150,7 +164,7 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
                                     title="Edit Details" style="color:#4b5563; display:inline-block; padding:8px; background:#f3f4f6; border-radius:6px; transition:0.2s;">
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </a>
-                                </td>
+                            </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
@@ -204,7 +218,7 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
             document.getElementById("item_id_input").value = "";
             document.getElementById("item_name_input").value = "";
             document.getElementById("item_code_input").value = "";
-            document.getElementById("save_btn").name = "add_item_btn"; 
+            document.getElementById("save_btn").name = "add_item_btn";
             document.getElementById("save_btn").innerText = "Save Item";
             document.getElementById("ADD_MODAL").style.display = "flex";
         }
@@ -221,7 +235,7 @@ $sup_res   = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY supplier_name
 
             document.getElementById("supplier_input").value = sup;
 
-            document.getElementById("save_btn").name = "update_item_btn"; 
+            document.getElementById("save_btn").name = "update_item_btn";
             document.getElementById("save_btn").innerText = "Update Item";
             document.getElementById("ADD_MODAL").style.display = "flex";
         }
