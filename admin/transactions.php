@@ -137,7 +137,7 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
             <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
             <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
 
-            <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
+            <a href="transactions.php" class="active"><i class="bi bi-file-text"></i> Transaction Logs</a>
             <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
     </aside>
@@ -207,17 +207,36 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
                             $user = $row['username'] ?? 'System';
                             $date = date("M d, H:i A", strtotime($row['transaction_time']));
 
-                            $type_badge = ($type === 'IN') ? 'badge-in' : 'badge-out';
-                            $qty_color = ($type === 'IN') ? 'text-green' : 'text-red';
-                            $qty_sign = ($type === 'IN') ? '+' : '-';
+                            // 🎨 FIX: Bulletproof inline styling to bypass CSS issues
+                            if ($type === 'IN') {
+                                $bg_color = "#dcfce7";
+                                $text_color = "#16a34a";
+                                $qty_color = "#16a34a";
+                                $qty_sign = "+";
+                            } elseif ($type === 'OUT') {
+                                $bg_color = "#fee2e2";
+                                $text_color = "#dc2626";
+                                $qty_color = "#dc2626";
+                                $qty_sign = "-";
+                            } else {
+                                // Handles 'MOVE' transactions beautifully in Blue
+                                $type = "MOVE";
+                                $bg_color = "#e0e7ff";
+                                $text_color = "#4f46e5";
+                                $qty_color = "#4f46e5";
+                                $qty_sign = "↻ ";
+                            }
 
                             echo "<tr>";
                             echo "<td style='padding-left:30px; font-family:monospace; color:#6b7280; font-size:13px;'>$txn_id</td>";
-                            echo "<td style='font-weight:700; color:#1f2937;'>" . $row['item_name'] . "</td>";
+                            echo "<td style='font-weight:700; color:#1f2937;'>" . htmlspecialchars($row['item_name']) . "</td>";
                             echo "<td><span class='batch-pill'>$batch_display</span></td>";
-                            echo "<td><span class='$type_badge'>$type</span></td>";
+
+                            // Fixed Badge Rendering
+                            echo "<td><span style='background:$bg_color; color:$text_color; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:bold; display:inline-block; min-width:55px; text-align:center;'>$type</span></td>";
+
                             echo "<td><span class='loc-link'>$loc_display</span></td>";
-                            echo "<td style='font-weight:800;' class='$qty_color'>$qty_sign$qty</td>";
+                            echo "<td style='font-weight:800; color:$qty_color;'>$qty_sign$qty</td>";
                             echo "<td style='color:#6b7280; font-size:13px;'>$date</td>";
                             echo "<td style='color:#6b7280; font-size:13px;'>$user</td>";
                             echo "</tr>";
@@ -245,7 +264,7 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
                     <?php
                     foreach ($batches as $b) {
                         $val = $b['batch_id'] . "," . $b['item_id'];
-                        echo "<option value='$val'>" . $b['item_name'] . " (B-" . $b['batch_id'] . ")</option>";
+                        echo "<option value='$val'>" . htmlspecialchars($b['item_name']) . " (B-" . $b['batch_id'] . ")</option>";
                     }
                     ?>
                 </select>
@@ -257,8 +276,7 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
                     if (mysqli_num_rows($locs_dd) > 0) {
                         mysqli_data_seek($locs_dd, 0); // Reset pointer
                         while ($l = mysqli_fetch_assoc($locs_dd)) {
-                            // Using location_code only (since description is optional/unknown)
-                            echo "<option value='" . $l['location_id'] . "'>" . $l['location_code'] . "</option>";
+                            echo "<option value='" . $l['location_id'] . "'>" . htmlspecialchars($l['location_code']) . "</option>";
                         }
                     }
                     ?>
@@ -283,7 +301,7 @@ $locs_dd  = mysqli_query($conn, "SELECT * FROM locations ORDER BY location_code 
                     <option value="">-- Choose Staff --</option>
                     <?php
                     foreach ($users_dd as $u) {
-                        echo "<option value='" . $u['user_id'] . "'>" . $u['username'] . "</option>";
+                        echo "<option value='" . $u['user_id'] . "'>" . htmlspecialchars($u['username']) . "</option>";
                     }
                     ?>
                 </select>

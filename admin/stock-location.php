@@ -193,18 +193,20 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
             </div>
         </div>
 
-        <div class="tf-loc-filter-group" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px;">
-            <a href="stock-location.php?loc=all" class="tf-loc-btn <?php echo ($filter_loc == 'all') ? 'active' : ''; ?>">All</a>
-            <?php foreach ($locations_list as $l_code): ?>
-                <a href="stock-location.php?loc=<?php echo $l_code; ?>"
-                    class="tf-loc-btn <?php echo ($filter_loc == $l_code) ? 'active' : ''; ?>">
-                    <?php echo $l_code; ?>
-                </a>
-            <?php endforeach; ?>
-        </div>
-
         <div class="tf-table-container">
-            <table class="tf-table">
+            <div style="padding: 20px; border-bottom: 1px solid #f3f4f6; display:flex; gap:15px; align-items:center; justify-content: space-between;">
+                <div style="position:relative; flex: 1; max-width: 400px;">
+                    <i class="bi bi-search" style="position:absolute; left:14px; top:12px; color:#9ca3af;"></i>
+                    <input type="text" id="searchInput" placeholder="Search by Location, Item, or Batch..."
+                        style="padding: 10px 10px 10px 40px; width: 100%; border: 1px solid #e5e7eb; border-radius: 8px; background:#f9fafb; outline:none; font-size: 14px; transition: border 0.3s;">
+                </div>
+
+                <a href="stock-location.php?loc=all" style="text-decoration:none; background:#f3f4f6; color:#374151; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: 0.2s;">
+                    <i class="bi bi-arrow-clockwise"></i> Show All
+                </a>
+            </div>
+
+            <table class="tf-table" id="stockTable">
                 <thead>
                     <tr>
                         <th style="padding-left:30px;">LOCATION</th>
@@ -336,6 +338,14 @@ while ($row = mysqli_fetch_assoc($loc_res)) {
         window.onclick = function(e) {
             if (e.target == modal) closeModal();
         }
+
+        // 🔍 NEW: Live Search Logic for the Table
+        document.getElementById("searchInput").addEventListener("keyup", function() {
+            let val = this.value.toLowerCase();
+            document.querySelectorAll("#stockTable tbody tr").forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+            });
+        });
     </script>
 </body>
 

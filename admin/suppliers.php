@@ -60,6 +60,17 @@ $result = mysqli_query($conn, $sql);
     <title>TrackFlow – Suppliers Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css?v=14">
+
+    <style>
+        /* FIX FOR INVISIBLE TEXT IN MODAL */
+        .modal-box input,
+        .modal-box select {
+            color: #111827 !important;
+            /* Forces dark text */
+            background-color: #ffffff !important;
+            /* Ensures background is white */
+        }
+    </style>
 </head>
 
 <body class="trackflow-body">
@@ -74,9 +85,8 @@ $result = mysqli_query($conn, $sql);
             <a href="batch-expiry.php"><i class="bi bi-clock-history"></i> Batch & Expiry</a>
             <a href="stock-location.php"><i class="bi bi-shop"></i> Stock by Location</a>
             <a href="locations.php"><i class="bi bi-geo-alt"></i> Locations</a>
-            <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
+            <a href="suppliers.php" class="active"><i class="bi bi-truck"></i> Suppliers</a>
             <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
-
 
             <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
 
@@ -188,10 +198,10 @@ $result = mysqli_query($conn, $sql);
                 <input type="email" name="email" id="sup_email_input" placeholder="contact@company.com" required>
 
                 <label style="font-size:13px; font-weight:600; color:#6b7280; display:block; margin-bottom:5px;">Phone Number</label>
-                <input type="text" name="phone" id="sup_phone_input" placeholder="+1 555 000 0000" required>
+                <input type="tel" name="phone" id="sup_phone_input" placeholder="+1 555 000 0000" required oninput="this.value = this.value.replace(/[^0-9+\- ]/g, '')">
 
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                    <button type="button" onclick="closeModal()" class="btn-cancel" style="background:transparent; border:1px solid #e5e7eb; color:#374151;">Cancel</button>
+                    <button type="button" onclick="closeModal()" class="btn-cancel" style="background:transparent; border:1px solid #e5e7eb; color:#374151; padding:10px 20px; border-radius:8px; cursor:pointer;">Cancel</button>
                     <button type="submit" name="save_supplier_btn" class="tf-btn-primary">Save Supplier</button>
                 </div>
             </form>

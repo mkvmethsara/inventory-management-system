@@ -75,18 +75,37 @@ $result = mysqli_query($conn, $sql);
     <link rel="stylesheet" href="../assets/css/style.css?v=25">
 
     <style>
-        /* DROPDOWN & MENU STYLES */
-        .tf-search-select {
-            padding: 10px 16px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            background: white;
-            color: #374151;
+        /* MODERN DROPDOWN STYLES */
+        .tf-modern-select {
+            appearance: none;
+            /* Removes default OS styling */
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 40px 10px 15px;
+            /* Extra padding on right for the arrow */
             font-size: 14px;
             font-weight: 600;
+            color: #334155;
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+
+            /* Custom dropdown arrow icon */
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 10px auto;
+        }
+
+        .tf-modern-select:hover {
+            border-color: #94a3b8;
+        }
+
+        .tf-modern-select:focus {
             outline: none;
-            min-width: 180px;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
         /* The Container for the dots */
@@ -112,7 +131,6 @@ $result = mysqli_query($conn, $sql);
         /* The Hidden Dropdown Menu */
         .dropdown-menu {
             display: none;
-            /* Hidden by default */
             position: absolute;
             right: 0;
             top: 30px;
@@ -175,14 +193,16 @@ $result = mysqli_query($conn, $sql);
                 <h2>Batch & Expiry Control</h2>
                 <p>Monitor expiry dates and batch quantities</p>
             </div>
-            <div style="display:flex; gap:10px;">
-                <select class="tf-search-select" id="statusFilter" onchange="filterBatches()">
+
+            <div style="display:flex; gap:12px; align-items: center;">
+                <select class="tf-modern-select" id="statusFilter" onchange="filterBatches()">
                     <option value="all">Show All Batches</option>
-                    <option value="expiring">⚠️ Nearly Expire (90 Days)</option>
-                    <option value="expired">⛔ Expired Items</option>
-                    <option value="lowstock">📉 Low Stock (&lt; 20 items)</option>
+                    <option value="expiring">Near Expiry (90 Days)</option>
+                    <option value="expired">Expired Items</option>
+                    <option value="lowstock">Low Stock (&lt; 20 items)</option>
                 </select>
-                <button onclick="openPopup()" class="tf-btn-primary">
+
+                <button onclick="openPopup()" class="tf-btn-primary" style="padding: 10px 20px; border-radius: 10px;">
                     <i class="bi bi-plus-lg"></i> Add Manual Batch
                 </button>
             </div>
@@ -219,7 +239,6 @@ $result = mysqli_query($conn, $sql);
                     $b_rec = $row['received_date'];
                     $b_exp = $row['expiry_date'];
 
-                    // Notice the new data-qty attribute added here for JS filtering
                     echo '
                     <div class="tf-batch-card" data-status="' . $status_tag . '" data-qty="' . $b_qty . '">
                         <div class="batch-left">
@@ -355,7 +374,7 @@ $result = mysqli_query($conn, $sql);
             if (!event.target.matches('.menu-dots')) closeAllMenus();
         }
 
-        // 3. Filter Logic (Upgraded for Low Stock)
+        // 3. Filter Logic
         function filterBatches() {
             const filterValue = document.getElementById('statusFilter').value;
 

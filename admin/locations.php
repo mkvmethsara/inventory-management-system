@@ -1,5 +1,7 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
     header("Location: ../index.php");
@@ -12,7 +14,7 @@ include '../config/db.php';
 if (isset($_POST['save_location_btn'])) {
     $id   = $_POST['location_id'];
     $desc = mysqli_real_escape_string($conn, $_POST['description']);
-    
+
     // Auto-generate the location code: Type - Column - Bin
     $type = $_POST['loc_type']; // 1 or 0
     $col  = str_pad($_POST['loc_col'], 2, '0', STR_PAD_LEFT); // Turns "1" into "01"
@@ -55,12 +57,14 @@ $result = mysqli_query($conn, $sql);
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>TrackFlow – Locations Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css?v=13">
 </head>
+
 <body class="trackflow-body">
     <aside class="tf-sidebar">
         <div class="tf-logo"><i class="bi bi-box-seam-fill"></i> TRACKFLOW</div>
@@ -72,7 +76,6 @@ $result = mysqli_query($conn, $sql);
             <a href="locations.php" class="active"><i class="bi bi-geo-alt"></i> Locations</a>
             <a href="suppliers.php"><i class="bi bi-truck"></i> Suppliers</a>
             <a href="staff.php"><i class="bi bi-people"></i> Staff Management</a>
-            <div class="nav-label">ADMINISTRATION</div>
             <a href="transactions.php"><i class="bi bi-file-text"></i> Transaction Logs</a>
             <a href="logout.php" class="tf-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </nav>
@@ -112,7 +115,7 @@ $result = mysqli_query($conn, $sql);
                             $id = $row['location_id'];
                             $code = htmlspecialchars($row['location_code']);
                             $desc = htmlspecialchars($row['description']);
-                            
+
                             // Determine Type for display
                             $type_badge = (substr($code, 0, 1) === '1') ? "<span style='color:#b45309; background:#fef3c7; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px;'>DRY</span>" : "<span style='color:#1d4ed8; background:#dbeafe; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px;'>DRINKS</span>";
 
@@ -174,6 +177,7 @@ $result = mysqli_query($conn, $sql);
 
     <script>
         const modal = document.getElementById("LOC_MODAL");
+
         function openModal() {
             document.getElementById("modalTitle").innerText = "Add New Location";
             document.getElementById("loc_id_input").value = "";
@@ -187,19 +191,24 @@ $result = mysqli_query($conn, $sql);
         function editLocation(id, code, desc) {
             document.getElementById("modalTitle").innerText = "Edit Location";
             document.getElementById("loc_id_input").value = id;
-            
+
             // Split "1-01-01" into parts
             let parts = code.split('-');
             document.getElementById("loc_type_input").value = parts[0];
             document.getElementById("loc_col_input").value = parseInt(parts[1]);
             document.getElementById("loc_bin_input").value = parseInt(parts[2]);
-            
+
             document.getElementById("loc_desc_input").value = desc;
             modal.style.display = "flex";
         }
 
-        function closeModal() { modal.style.display = "none"; }
-        window.onclick = function(e) { if (e.target == modal) closeModal(); }
+        function closeModal() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(e) {
+            if (e.target == modal) closeModal();
+        }
     </script>
 </body>
+
 </html>
