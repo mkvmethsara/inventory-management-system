@@ -264,7 +264,7 @@ $result = mysqli_query($conn, "SELECT * FROM users ORDER BY user_id DESC");
                 </select>
 
                 <label style="font-size:13px; font-weight:600; color:#6b7280;" id="passLabel">Password</label>
-                <input type="password" name="password" id="password_input" placeholder="Enter password" required>
+                <input type="password" name="password" id="password_input" minlength="4" placeholder="Enter password" required>
 
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                     <button type="button" onclick="closeModal()" class="btn-cancel" style="background:transparent; border:1px solid #e5e7eb; color:#374151;">Cancel</button>

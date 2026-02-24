@@ -145,7 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <form method="POST" action="">
             <input type="text" name="username" placeholder="Username" required autofocus>
-            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="password" minlength="4" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>
 

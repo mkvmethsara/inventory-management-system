@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <div class="mb-3 text-start">
                 <label>Password</label>
-                <input type="password" name="password" placeholder="••••••••" required>
+                <input type="password" name="password" minlength="4" placeholder="••••••••" required>
             </div>
 
             <button type="submit">Login</button>
